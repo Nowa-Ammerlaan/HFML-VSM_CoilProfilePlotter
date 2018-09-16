@@ -19,8 +19,8 @@ Or optionally use a second argument like this:
 ```
 ./coilprofile.py inputfile outputfile
 ```
-And the program will use plt.savefig() to save the file to `ouputfile` instead.
-Note that `ouputfile` should have one of the filename extensions suported by matplotlib (e.g. `.pdf`, `.png`)
+And the program will use plt.savefig() to save the plot to `outputfile` instead.
+Note that `outputfile` should have one of the filename extensions suported by matplotlib (e.g. `.pdf`, `.png`)
 or the `.tex` extension, in which case it will use matplotlib2tikz instead.
 
 ## Can I use/adapt your program?
