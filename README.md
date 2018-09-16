@@ -11,13 +11,13 @@ To measure the response of a VSM's pickup coils, set it up to go through a 'posi
 Open the coilprofile.py file and edit the config options. See also the overview of options below.
 Then run it like this:
 ```
-/coilprofile.py inputfile
+./coilprofile.py inputfile
 ```
 And it will process the data in `inputfile` and show you the plot using plt.show()
  
 Or optionally use a second argument like this:
 ```
-/coilprofile.py inputfile outputfile
+./coilprofile.py inputfile outputfile
 ```
 And the program will use plt.savefig() to save the file to `ouputfile` instead.
 Note that `ouputfile` should have one of the filename extensions suported by matplotlib (e.g. `.pdf`, `.png`)
