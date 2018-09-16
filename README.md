@@ -7,6 +7,13 @@ I assume that you are already familiar with the concept of a VSM (Vibrating-samp
 ## Long discription
 To measure the response of a VSM's pickup coils, set it up to go through a 'position loop'. This means that the VSM will start vibrating for a set amount of time (stepdur) at a set begin position (beginstep), then stop. And then move (stepsize) and start vibrating there again. The vibrating motion will induce a (~90 degree phase shifted) AC voltage across the pickup coils, which will depend strongly on the position at which the VSM is currently vibrating. When this voltage is measured (e.g using 2 Lock-In amplifiers; 1 for reference and 1 for the VSM's signal) it can be plotted agains the VSM's position. This program identifies each peak in the signal, calculates it's average value and standard deviation, and the plots is agains the postion. Optionally it can also fit a sine through the data, and identify the center of the coil (if it was within the range of the measured data). If a center has been found, it also has an option to shift the x-axis such that 0 is in the center of the coil.
 
+## Dependencies
+python (I used python3.6, but other versions should work to)
+matplotlib
+numpy
+scipy
+Optionally: matplotlib2tikz (when saving as .tex)
+
 ## How does it work?
 Open the coilprofile.py file and edit the config options. See also the overview of options below.
 Then run it like this:
