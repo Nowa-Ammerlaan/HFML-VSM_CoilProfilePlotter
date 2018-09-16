@@ -22,8 +22,9 @@ If applicable, add screenshots to help explain your problem.
 It might also be helpful to upload your data file.
 
 **Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Version [e.g. 22]
+ - OS: [e.g. linux (distro_x)]
+ - Python Version [e.g. 22]
+ - Matplotlib/numpy/scipy Version
 
 **Additional context**
 Add any other context about the problem here.
