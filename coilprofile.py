@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "1.1"
+__version__ = "1.2"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -45,7 +45,7 @@ beginstep = 3000  # 16.129mm, it is assumed that the first peak is here
 
 numstep = 100
 stepdur = 20  # (s)
-reacttime = 3  # (s) It takes a certain amount of time for the voltage to reach
+reacttime = 5  # (s) It takes a certain amount of time for the voltage to reach
 # it's peak value, these data points should not be included in the peak.
 
 disp = 200  # 1.08mm
@@ -53,7 +53,7 @@ freq = 18.1  # (Hz)
 deltafreq = 0.5  # (Hz) frequency must be between freq-deltafreq and
 # freq+deltafreq for it to be a valid datapoint
 
-minpeakV = 0.4e-4  # (V) signal must be minimally this high for it to be
+minpeakV = 0.3e-4  # (V) signal must be minimally this high for it to be
 # considered a data point
 
 # The last peak can be problematic because the measurement does not stop
@@ -61,7 +61,7 @@ minpeakV = 0.4e-4  # (V) signal must be minimally this high for it to be
 # to remove the last point say 'yes' here, otherwise say 'no'
 rm_lastpoint = 'yes'
 rm_firstpoint = 'no'  # Remove first datapoint?
-remove_excess = 'yes'  # Remove points that seem to be recorded after
+remove_excess = 'no'  # Remove points that seem to be recorded after
 # the position loop has stopped, (points for which coord > endstep)
 fit = 'no'  # Fit a sine through the data
 theonetruecenter = 0  # If multiple possible coilcenters exist it is up to
@@ -159,7 +159,8 @@ peaktime = np.zeros(time.size)
 datastddev = np.zeros(time.size)
 tmpindices = np.zeros(time.size)
 
-timeofoneindex = time[1] - time[0]  # Moving 1 index corresponds to this time
+timeofoneindex = np.average(np.diff(time))  # Moving 1 index corresponds
+# to this much in time
 indexwidth = int(round(reacttime / timeofoneindex))  # How many indices
 # around a point should also be above minpeakV?
 peakindexrange = int(round((stepdur - (2 * reacttime)) / timeofoneindex))
@@ -281,10 +282,10 @@ for l in range(0, datapoint.size-1):
     dataerr[l] = datastddev[l]
 
 
-coilcenterbit = 0  # By default, there is no coil center thus bit=0
-
 # length in motcoord to extrapolated
 motextrapol = extrapolstep * stepsize
+
+coilcenterbit = 0  # By default, there is no coil center thus bit=0
 
 # Fit if it is enabled in config
 if fit == 'yes' or fit == 'Yes':
@@ -294,7 +295,8 @@ if fit == 'yes' or fit == 'Yes':
 
     # An educated guess to the fit paramaters
     guess_amp = (np.max(datapoint) - np.min(datapoint)) / 2
-    guess_offset = np.max(datapoint) - guess_amp
+    guess_offset = min(np.min(datapoint) + guess_amp,
+                       np.max(datapoint) - guess_amp)
     guess_freq = 1 / (abs(motcoord[np.argmax(datapoint)] -
                       motcoord[np.argmin(datapoint)]) * 2)
     p0 = [guess_freq, guess_amp, 0, guess_offset]
@@ -310,10 +312,10 @@ if fit == 'yes' or fit == 'Yes':
     data_fit = sine(x, params[0], params[1], params[2], params[3])
 
     print("\nFit paramaters:")
-    print("\nfrequency = \t%f \u00B1 %f" % (params[0], params_err[0]))
-    print("\namplitude = \t%f \u00B1 %f" % (params[1], params_err[1]))
-    print("\nphase = \t%f \u00B1 %f" % (params[2], params_err[2]))
-    print("\noffset = \t%f \u00B1 %f" % (params[3], params_err[3]))
+    print("frequency = \t%f \u00B1 %f" % (params[0], params_err[0]))
+    print("amplitude = \t%f \u00B1 %f" % (params[1], params_err[1]))
+    print("phase = \t%f \u00B1 %f" % (params[2], params_err[2]))
+    print("offset = \t%f \u00B1 %f" % (params[3], params_err[3]))
 
     # Find indices where the sign between data_fit and offset changes
     # (when the sine intersects with the offset)
