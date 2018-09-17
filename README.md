@@ -34,7 +34,7 @@ or the `.tex` extension, in which case it will use matplotlib2tikz instead.
 ## Can I use/adapt your program?
 Of course you can, it's licensed under GPLv3.
 
-## I have an improvemnt/comment
+## I have an improvement/comment
 Awesome, please leave it in the bug reports and I will look at it ASAP.
 
 ## My plot looks like crap, what can I do?
