@@ -101,7 +101,7 @@ Remove points for which their motor coordinates are larger then stepsize, becaus
 Fit a sine to the data, this only works well if at least both ends of the coil were within the range of the position loop. Otherwise there is no way for the fit to get a correct amplitude of frequency.
 
 **theonetruecenter = _int_**
-Because the fit function is sinusoidal it might have multiple points where it crosses it's rest position, but **there can be only one** coil center, here the user can select which one is the one true coil center (e.g. 0 means the first candidate is the right one).
+Because the fit function is sinusoidal it might have multiple points where it crosses it's rest position, but *there can be only one* coil center, here the user can select which one is the one true coil center (e.g. 0 means the first candidate is the right one).
 
 **makecoordrel = _'yes'_**
 Should the upper x-axis coordinates be shifted such that 0 corresponds to the coil center?
@@ -111,17 +111,11 @@ Note that this option is only available when fit=yes otherwise there is no coil 
 When this is enabled, the VSM's signal is divided by the reference signal from the motor.
 This should help in correcting any errors introduced due to position dependent friction.
 
-**sigfreqpos = _int_**
-
-**sigXpos = _int_**
-
-**sigYpos = _int_**
-
-**reffreqpos = _int_**
-
-**refXpos = _int_**
-
-**refYpos = _int_**
-
+**sigfreqpos = _int_**\
+**sigXpos = _int_**\
+**sigYpos = _int_**\
+**reffreqpos = _int_**\
+**refXpos = _int_**\
+**refYpos = _int_**\
 Sometimes additional devices are measured simultaneously with the lock-ins, here you can set in which columns the relevant data is stored. 
 Note that time will always be in the zeroth column.
