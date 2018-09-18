@@ -4,7 +4,7 @@ A python program to make plots of the response of a VSM's pickup coils as a func
 ### Note:
 I assume that you are already familiar with the concept of a VSM (Vibrating-sample magnetometer), if not then this is probably not what you are looking for.
 
-## Long discription
+## Long description
 To measure the response of a VSM's pickup coils, set it up to go through a 'position loop'. This means that the VSM will start vibrating for a set amount of time (stepdur) at a set begin position, then stop. 
 And then move a certain distance and start vibrating there again. 
 The vibrating motion will induce a (~90 degree phase shifted) AC voltage across the pickup coils, which will depend strongly on the position at which the VSM is currently vibrating. 
@@ -22,7 +22,7 @@ The versions indicated here are the versions that I am currently using, but ther
 - Optionally: matplotlib2tikz-0.6.18 (when saving as .tex)
 
 ## Other requirements
-The program relies on the use of at least 1 lock-in to measure the VSM's singnal, for best results use a second lock-in to record a reference signal from a potentiometer connected to the motor.
+The program relies on the use of at least 1 lock-in to measure the VSM's signal, for best results use a second lock-in to record a reference signal from a potentiometer connected to the motor.
 To determine the position of the data points correctly the program requires that the position be recorded simultaneously with the signal, 
 this can be accomplished by using a 1Hz low pass filter on the reference signal from the motor's potentiometer and recording it's voltage. 
 This voltage should then calibrated with the motor's position, the program has 2 config options for these calibration parameters (y=a*x+b).
@@ -52,7 +52,7 @@ Awesome, please leave it in the bug reports and I will look at it ASAP.
 ## My plot looks like crap, what can I do?
 Try increasing 'reacttime' and maybe play a bit with 'minpeakV' and 'deltafreq', see the overview of config options below.
 
-## The scipy fit fails, what happend?
+## The scipy fit fails, what happened?
 For a function as complex as this one, scipy's curve_fit requires very good starting estimates. 
 Make sure that the 'guess_r1', 'guess_r2', 'guess_L' and 'guess_N' variables are set to very close estimates. 
 Also provide a good guess for guess_x0, this can be done by first plotting with fit='no' and manually determining the approximate coilcenter.
