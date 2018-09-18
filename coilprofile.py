@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "1.2"
+__version__ = "2.0"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -34,39 +34,42 @@ from scipy.optimize import curve_fit
 """Config"""
 
 # Set the paramaters that were used in the data acquisition
-convert = 0.005376  # How many mm does the motor move
+convert = 5.376e-3  # How many mm does the motor move
 # when it moves 1 motor position?
-stepsize = 50  # 0.269mm
-extrapolstep = 5  # If fit=yes, how many steps should be extrapolated in plot
-endstep = 8000  # 43.011mm
-beginstep = 3000  # 16.129mm, it is assumed that the first peak is here
-# if not, then the x-axis will not correspond correctly to the motor
-# coordinates
+mmextrapol = 2  # (mm) How many mm to extrapolate
 
-numstep = 100
-stepdur = 20  # (s)
+stepdur = 20  # (s) # How long is the VSM at 1 position?
 reacttime = 5  # (s) It takes a certain amount of time for the voltage to reach
 # it's peak value, these data points should not be included in the peak.
 
-disp = 200  # 1.08mm
+mmdisp = 1.08  # (mm) How much does the VSM vibrate at a position? (this is
+# NOT the amplitude, but two times the amplitude)
 freq = 18.1  # (Hz)
-deltafreq = 0.5  # (Hz) frequency must be between freq-deltafreq and
+deltafreq = 0.2  # (Hz) frequency must be between freq-deltafreq and
 # freq+deltafreq for it to be a valid datapoint
 
-minpeakV = 0.3e-4  # (V) signal must be minimally this high for it to be
+minpeakV = 0.1e-4  # (V) signal must be minimally this high for it to be
 # considered a data point
 
-# The last peak can be problematic because the measurement does not stop
-# automaically at the end of the position looop,
-# to remove the last point say 'yes' here, otherwise say 'no'
-rm_lastpoint = 'yes'
-rm_firstpoint = 'no'  # Remove first datapoint?
-remove_excess = 'no'  # Remove points that seem to be recorded after
-# the position loop has stopped, (points for which coord > endstep)
-fit = 'no'  # Fit a sine through the data
-theonetruecenter = 0  # If multiple possible coilcenters exist it is up to
-# the user to choose which one is the correct one, e.g. if the first peak
-# shoud be the coil center set this to 0
+# Potentio meter calibaration
+# motor coordinates = a * potentiometer DC voltage + b
+a = 8836.934199
+b = 1868.461891
+
+# The last peaks can be problematic because the measurement does not stop
+# automaically at the end of the position loop,
+# set this to remove a number of points from the end
+rm_lastpoint = 0
+rm_firstpoint = 0  # Amount of peaks to remove from beginning
+
+
+fit = 'yes'  # Fit theoretical coil profile to the data
+guess_x0 = 15  # mm where is the coil center approximatly?
+guess_r1 = 1.6  # mm approximate inner radius
+guess_r2 = 2.8  # mm approximate outer radius
+guess_L = 12  # mm approximate length
+guess_N = 6120  # aproximate number of windings
+
 makecoordrel = 'yes'  # Plot x coordinates in mm relative to coil center.
 # This option is only available if fit='yes'
 dividebyref = 'yes'  # Divide sigX by refX to make the data relative to the
@@ -76,14 +79,15 @@ dividebyref = 'yes'  # Divide sigX by refX to make the data relative to the
 # the index of the columns that correspond to the reference and signal
 # lock in's data should be inserted into their respective variable
 # Note that time is always 0
-# e.g: "Time(sec)    Dev2_freq    Dev2SR830_X    Dev2_Y
-# Dev3_freq    Dev3SR830_X    Dev3_Y"
+# e.g: "Time(sec)	Dev2_freq	Dev2SR830_X	Dev2_Y	Dev3_freq
+# Dev3SR830_X	Dev3_Y	Dev4_K2000(V)"
 sigfreqpos = 1  # Default: 1
 sigXpos = 2  # Default: 2
 sigYpos = 3  # Default: 3
 reffreqpos = 4  # Default: 4
 refXpos = 5  # Default: 5
 refYpos = 6  # Default: 6
+potmetDCpos = 7  # Default 7
 
 """Program"""
 
@@ -105,7 +109,8 @@ with open(filename, mode='r') as fileopen:
 # Count the number of lines in the file
 num_lines = len(file)
 
-print("Loaded file:%s \nThis file has %i lines\n" % (filename, num_lines))
+print("Loaded file: %s \nThis file has %i lines\n" % (filename, num_lines))
+
 
 # Create arrays for all data columns
 time = np.zeros(num_lines)
@@ -115,8 +120,9 @@ sigY = np.zeros(num_lines)
 reffreq = np.zeros(num_lines)
 refX = np.zeros(num_lines)
 refY = np.zeros(num_lines)
+potmetDC = np.zeros(num_lines)
 
-a = 0  # Counting integer
+h = 0  # Counting integer
 
 for line in file:
     if line.startswith(('#', '\s', '\n', '\t', 'Time(sec)')):
@@ -124,14 +130,15 @@ for line in file:
         continue
     # For each line split the columns into dataline and move into data arrays
     dataline = line.split()
-    time[a] = dataline[0]
-    sigfreq[a] = dataline[sigfreqpos]
-    sigX[a] = dataline[sigXpos]
-    sigY[a] = dataline[sigYpos]
-    reffreq[a] = dataline[reffreqpos]
-    refX[a] = dataline[refXpos]
-    refY[a] = dataline[refYpos]
-    a = a + 1
+    time[h] = dataline[0]
+    sigfreq[h] = dataline[sigfreqpos]
+    sigX[h] = dataline[sigXpos]
+    sigY[h] = dataline[sigYpos]
+    reffreq[h] = dataline[reffreqpos]
+    refX[h] = dataline[refXpos]
+    refY[h] = dataline[refYpos]
+    potmetDC[h] = dataline[potmetDCpos]
+    h = h + 1
 
 # Make the amplitude relative to the reference amplitude, this becomes
 # relavant near the beginning and end of the position loop where the
@@ -148,6 +155,7 @@ sigY = np.trim_zeros(sigY)
 reffreq = np.trim_zeros(reffreq)
 refX = np.trim_zeros(refX)
 refY = np.trim_zeros(refY)
+potmetDC = np.trim_zeros(potmetDC)
 
 if dividebyref == 'yes' or dividebyref == 'Yes':
     relsigX = np.trim_zeros(relsigX)
@@ -155,7 +163,7 @@ if dividebyref == 'yes' or dividebyref == 'Yes':
 
 # Introduce new arrays for the processed data
 datapoint = np.zeros(time.size)
-peaktime = np.zeros(time.size)
+peakpos = np.zeros(time.size)
 datastddev = np.zeros(time.size)
 tmpindices = np.zeros(time.size)
 
@@ -165,10 +173,13 @@ indexwidth = int(round(reacttime / timeofoneindex))  # How many indices
 # around a point should also be above minpeakV?
 peakindexrange = int(round((stepdur - (2 * reacttime)) / timeofoneindex))
 # How many indices is a peak wide?
+
+
 peakbit = 0  # Bit to keep track of if a peak has been detected
 k = 0  # Counting integer
 j = 0  # Counting integer
 
+# Find peaks
 for i in range(0, time.size - 1):
     # Only use data where the frequencies correspond to approximatly
     # the frequency that was input into the motor
@@ -192,7 +203,7 @@ for i in range(0, time.size - 1):
                 tmpindices = np.zeros(time.size)  # Reset tmp array
                 j = 0  # Reset counting integer
                 peakbit = 0  # Reset peakbit
-                print("A peak was found, however it lasted for less",
+                print("\nA peak was found, however it lasted for less",
                       "then %f seconds, it will be ignored." % (reacttime),
                       "If it shouldn't be ignored decrease",
                       "reacttime = %f s." % (reacttime),
@@ -224,7 +235,7 @@ for i in range(0, time.size - 1):
             # Trim zeros, save time index, average and stddev of
             # peak data
             peaksig = np.trim_zeros(peaksig)
-            peaktime[k] = time[midindex]
+            peakpos[k] = a * potmetDC[midindex] + b
             datapoint[k] = np.average(peaksig)
             datastddev[k] = np.std(peaksig)
 
@@ -233,183 +244,153 @@ for i in range(0, time.size - 1):
             tmpindices = np.zeros(time.size)  # reset tmp array
             k = k + 1
 
+
 # Trim zeros of peak averages and peak times
 datapoint = np.trim_zeros(datapoint)
-peaktime = np.trim_zeros(peaktime)
+datastddev = np.trim_zeros(datastddev)
+peakpos = np.trim_zeros(peakpos)
 
 
-if rm_firstpoint == 'yes' or rm_firstpoint == 'Yes':
-    print("\nRemoving first point because rm_firstpoint='yes'")
+# Remove begining points if necessary
+for u in range(0, rm_firstpoint):
     datapoint = np.delete(datapoint, 0)
-    peaktime = np.delete(peaktime, 0)
-    beginstep = beginstep + stepsize
+    datastddev = np.delete(datastddev, 0)
+    peakpos = np.delete(peakpos, 0)
+    print("\nRemoving peak %i" % (u),
+          " because rm_firstpoint=%i" % (rm_firstpoint))
 
 
-# Convert time to position, by calulating the 'speed' at which the peak
-# positions change, it is assumed that the first peak occurs at beginstep
-speed = stepsize / (peaktime[1] - peaktime[0])
-offset = beginstep - (speed * peaktime[0])
-
-motcoord = speed * peaktime + offset
-
-# Remove data points that are beyond endstep,
-# these points must be recorded after the postion loop ended
-if remove_excess == 'yes' or remove_excess == 'Yes':
-    print("\nRemoving points beyond %f, because remove_excess='yes'" % endstep)
-    for r in range(motcoord.size - 1, 0, -1):
-        if motcoord[r] > endstep + stepsize:
-            # Stepsize is added te prevent removing points due to rounding
-            # in the float to int conversion that is implied in the if
-            motcoord = np.delete(motcoord, -1)
-            datapoint = np.delete(datapoint, -1)
-
-
-# Last point can be problematic because the motor will stay on at the end
-# of the position loop
-if rm_lastpoint == 'yes' or rm_lastpoint == 'Yes':
-    print("\nRemoving final point because rm_lastpoint='yes'")
+# Remove endpoints, if necessary
+for t in range(peakpos.size - 1, (peakpos.size - 1) - rm_lastpoint, -1):
     datapoint = np.delete(datapoint, -1)
-    motcoord = np.delete(motcoord, -1)
-    endstep = endstep - stepsize
+    datastddev = np.delete(datastddev, -1)
+    peakpos = np.delete(peakpos, -1)
+    print("\nRemoving peak %i" % (t),
+          "because rm_lastpoint=%i" % (rm_lastpoint))
 
 
-# New array for the erros (stddev)
-dataerr = np.empty(datapoint.size)
-
-# Use this for loop instead of trim_zeros because sometimes the last value is
-# zero and then it would get removed as well
-for l in range(0, datapoint.size-1):
-    dataerr[l] = datastddev[l]
+# Motor coords to millimeter and mm units from config to motor coords.
+mmcoord = peakpos * convert
+posextrapol = mmextrapol / convert
+disp = mmdisp / convert
 
 
-# length in motcoord to extrapolated
-motextrapol = extrapolstep * stepsize
-
-coilcenterbit = 0  # By default, there is no coil center thus bit=0
-
-# Fit if it is enabled in config
+# Fit, if it is enabled in config
 if fit == 'yes' or fit == 'Yes':
 
-    def sine(x, f, amp, phase, offset):
-        return amp * np.sin(x * f + phase) + offset
+    def func(x, x0, A, r1, r2, L):
+        dBdz = (
+            np.log(r2 + np.sqrt(r2**2 + (x - x0 - L)**2)) -
+            np.log(r1 + np.sqrt(r1**2 + (x - x0 - L)**2)) +
+            np.log(r1 + np.sqrt(r1**2 + (x - x0)**2)) -
+            np.log(r2 + np.sqrt(r2**2 + (x - x0)**2)) +
+            (x - x0 - L)**2 * (
+                          1 / (r2 * np.sqrt(r2**2 + (x - x0 - L)**2) +
+                               r2**2 + (x - x0 - L)**2) -
+                          1 / (r1 * np.sqrt(r1**2 + (x - x0 - L)**2) +
+                               r1**2 + (x - x0 - L)**2)) +
+            (x - x0)**2 * (
+                    1 / (r1 * np.sqrt(r1**2 + (x - x0)**2) +
+                         r1**2 + (x - x0)**2) -
+                    1 / (r2 * np.sqrt(r2**2 + (x - x0)**2) +
+                         r2**2 + (x - x0)**2))
+                )
+        V = A * dBdz
+        return V
 
     # An educated guess to the fit paramaters
-    guess_amp = (np.max(datapoint) - np.min(datapoint)) / 2
-    guess_offset = min(np.min(datapoint) + guess_amp,
-                       np.max(datapoint) - guess_amp)
-    guess_freq = 1 / (abs(motcoord[np.argmax(datapoint)] -
-                      motcoord[np.argmin(datapoint)]) * 2)
-    p0 = [guess_freq, guess_amp, 0, guess_offset]
+    if dividebyref == 'yes' or dividebyref == 'Yes':
+        guess_amp = 1
+    else:
+        guess_amp = np.sqrt(2) * np.pi**2 * mmdisp * freq * guess_N * 1e-7
+    p0 = [guess_x0, guess_amp, guess_r1, guess_r2, guess_L]
 
     # Fit
-    params, params_covar = curve_fit(sine, motcoord, datapoint, p0=p0)
+    params, params_covar = curve_fit(func, mmcoord, datapoint, p0=p0)
+
     # Calculate stddev from covar
     params_err = np.sqrt(np.diag(params_covar))
 
     # Make points out of fit
-    x = np.linspace(motcoord[0] - motextrapol,
-                    motcoord[-1] + motextrapol, num=1000)
-    data_fit = sine(x, params[0], params[1], params[2], params[3])
+    fit_pos = np.linspace(mmcoord[0] - mmextrapol,
+                          mmcoord[-1] + mmextrapol, num=1000)
+    data_fit = func(fit_pos, params[0], params[1], params[2],
+                    params[3], params[4])
 
     print("\nFit paramaters:")
-    print("frequency = \t%f \u00B1 %f" % (params[0], params_err[0]))
+    print("x-offset = \t%f \u00B1 %f m" % (params[0], params_err[0]))
     print("amplitude = \t%f \u00B1 %f" % (params[1], params_err[1]))
-    print("phase = \t%f \u00B1 %f" % (params[2], params_err[2]))
-    print("offset = \t%f \u00B1 %f" % (params[3], params_err[3]))
+    print("inner radius = \t%f \u00B1 %f m" % (params[2], params_err[2]))
+    print("outer radius = \t%f \u00B1 %f m" % (params[3], params_err[3]))
+    print("length = \t%f \u00B1 %f m" % (params[4], params_err[4]))
 
-    # Find indices where the sign between data_fit and offset changes
-    # (when the sine intersects with the offset)
-    # These points (if they exist) must be the coil center
-    coilcenterindex = np.argwhere(np.diff(np.sign(params[3] - data_fit)))
-    if coilcenterindex.size < 1:
-        print("\nCould not find coil center.",
-              "This might be due to a incorrect fit,",
-              "or the center is not in the data.",
-              "Try increasing 'extrapolstep'")
+    # if enabled, move the x-axis such that the coilcenter is zero
+    if (makecoordrel == 'yes' or makecoordrel == 'Yes'):
+        coilcenterindex = np.argwhere(np.diff(np.sign(data_fit)))
+        if coilcenterindex.size < 1:
+            print("\nCan't find coil center, this is most likly due",
+                  "to a incorrect fit. Try increasing 'deltafreq' or",
+                  "'minpeakV'")
+            makecoordrel = 'no'
+        else:
+            offset = fit_pos[coilcenterindex[0][0]]
+            print("\nCoil center found at: %f =" % (offset / convert),
+                  "%f mm, x-axis will be shifted accordingly" % (offset))
+            mmcoord = mmcoord - offset
+            fit_pos = np.linspace(mmcoord[0] - mmextrapol,
+                                  mmcoord[-1] + mmextrapol, num=1000)
+            data_fit = func(fit_pos, params[0] - offset, params[1], params[2],
+                            params[3], params[4])
 
-    elif coilcenterindex.size > 1:
-        allcoilcenter = x[coilcenterindex]
-        print("\nFound more then 1 possible coil centers,",
-              "possible candidates:")
-        print(allcoilcenter)
-        print("This might be due to a incorrect fit,",
-              "or the data is extrapolated too far.",
-              "Try decreasing 'extrapolstep'")
-        # Let user decide which center is the right one
-        coilcenter = allcoilcenter[theonetruecenter][0]
-        print("\nBecause 'theonetruecenter'= %i" % (theonetruecenter),
-              "center-candidate number %i" % (theonetruecenter + 1),
-              "is choosen to be the correct one")
-
-        coilcenterbit = 1  # Found a coilcenter
-
-    elif coilcenterindex.size == 1:
-        coilcenter = x[coilcenterindex][0][0]
-        print("\nFound coilcenter at motor coordinates: %f" % (coilcenter))
-        coilcenterbit = 1  # Found a coilcenter
-
-else:
-    makecoordrel = 'no'
-
-# Motor coords to mm
-mmcoord = motcoord * convert
-mmextrapol = motextrapol * convert
-mmdisp = disp * convert
-# Make the mm coords relative to coilcenter, if enabled
-if makecoordrel == 'yes' or makecoordrel == 'Yes':
-    if coilcenterbit == 1:
-        coilcenter_in_mm = coilcenter * convert
-        mmcoord = mmcoord - coilcenter_in_mm
-        print("\n'makecoordrel' is enabeld,",
-              "and a coil center has been found.",
-              "Top x-axis coordinates will be relative to the coil center")
-
-    else:
-        print("\n'makecoordrel' is enabeld,",
-              "but a coil center could not be found.",
-              "Coordinates will not be relative")
 
 # Plot
 fig, ax1 = plt.subplots()
 
 ax1.minorticks_on()
-ax1.errorbar(motcoord, datapoint, xerr=disp, yerr=dataerr, linestyle='None')
+ax1.errorbar(mmcoord, datapoint, xerr=(mmdisp / 2), yerr=datastddev,
+             linestyle='None', fmt='.', elinewidth=0.5, )
 
-ax1.set_xlabel("Motor position")
+if ((makecoordrel == 'yes' or makecoordrel == 'Yes') and
+   (fit == 'yes' or fit == 'Yes')):
+    ax1.set_xlabel("Sample position relative to the coil center (mm)")
+else:
+    ax1.set_xlabel("Sample position (mm)")
+
 if dividebyref == 'yes' or dividebyref == 'Yes':
     ax1.set_ylabel("Relative peak voltage sigX / refX")
 else:
     ax1.set_ylabel("Peak signal voltage sigX (V)")
 
+ax1.set_xlim(mmcoord[0] - mmextrapol, mmcoord[-1] + mmextrapol)
 ax1.set_ylim(np.min(datapoint) - minpeakV, np.max(datapoint) + minpeakV)
-ax1.set_xlim(motcoord[0] - motextrapol, motcoord[-1] + motextrapol)
 
 if fit == 'yes' or fit == 'Yes':
-    ax1.plot(x, data_fit)
+    ax1.plot(fit_pos, data_fit)
+
+if (makecoordrel == 'yes' or makecoordrel == 'Yes'):
+    # If a center has been found, add lines to show it
+    ax1.axvline(color='black', alpha=0.5)
+    ax1.axhline(color='black', alpha=0.5)
+
 
 ax2 = ax1.twiny()  # Second x-axis is twin to first
 
 # Make second plot on the second axis, but make it transparent
 # because otherwise the plot would be shown twice
 ax2.minorticks_on()
-ax2.errorbar(mmcoord, datapoint, xerr=mmdisp, yerr=dataerr,
-             linestyle='None', color='white', alpha=0)
+ax2.errorbar(peakpos, datapoint, xerr=(disp / 2),
+             yerr=datastddev, linestyle='None', color='white', alpha=0)
 
-if makecoordrel == 'yes' or makecoordrel == 'Yes':
-    ax2.set_xlabel("Sample position relative to the coil center (mm)")
-else:
-    ax2.set_xlabel("Sample position (mm)")
-ax2.set_xlim(mmcoord[0] - mmextrapol, mmcoord[-1] + mmextrapol)
+ax2.set_xlabel("Motor position")
+ax2.set_xlim(peakpos[0] - posextrapol, peakpos[-1] + posextrapol)
 
-if (makecoordrel == 'yes' or makecoordrel == 'Yes') and coilcenterbit == 1:
-    # If a center has been found, add lines to show it
-    ax2.axvline(color='black', alpha=0.5)
-    ax2.axhline(y=params[3], color='black', alpha=0.5)
 
 ax1.grid(which='both', axis='both')
 # Sometimes axis labels will fall of the plot without the tight_layout line
 plt.tight_layout()
 
+
+# Save plot, if second argument is provided
 if len(sys.argv) == 3:
     # If there is a second argument, interpret it as output file
     fileout = sys.argv[2]
