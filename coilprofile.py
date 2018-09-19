@@ -362,16 +362,20 @@ else:
     ax1.set_ylabel("Peak signal voltage sigX (V)")
 
 ax1.set_xlim(mmcoord[0] - mmextrapol, mmcoord[-1] + mmextrapol)
-ax1.set_ylim(np.min(datapoint) - minpeakV, np.max(datapoint) + minpeakV)
 
 if fit == 'yes' or fit == 'Yes':
     ax1.plot(fit_pos, data_fit)
+    ax1.set_ylim(min(np.min(datapoint) - minpeakV,
+                     np.min(data_fit) - minpeakV),
+                 max(np.max(datapoint) + minpeakV,
+                     np.max(data_fit) + minpeakV))
+else:
+    ax1.set_ylim(np.min(datapoint) - minpeakV, np.max(datapoint) + minpeakV)
 
 if (makecoordrel == 'yes' or makecoordrel == 'Yes'):
     # If a center has been found, add lines to show it
     ax1.axvline(color='black', alpha=0.5)
     ax1.axhline(color='black', alpha=0.5)
-
 
 ax2 = ax1.twiny()  # Second x-axis is twin to first
 
@@ -383,7 +387,6 @@ ax2.errorbar(peakpos, datapoint, xerr=(disp / 2),
 
 ax2.set_xlabel("Motor position")
 ax2.set_xlim(peakpos[0] - posextrapol, peakpos[-1] + posextrapol)
-
 
 ax1.grid(which='both', axis='both')
 # Sometimes axis labels will fall of the plot without the tight_layout line
