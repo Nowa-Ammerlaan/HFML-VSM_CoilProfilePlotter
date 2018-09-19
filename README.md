@@ -29,15 +29,25 @@ This voltage should then calibrated with the motor's position, the program has 2
 
 ## How does it work?
 Open the coilprofile.py file and edit the config options. See also the overview of options below.
-Then run it like this:
+Then run it like this:\
+**Linux:**
 ```
 ./coilprofile.py inputfile
 ```
+**Windows:**
+```
+C:\ProgramData\Anaconda3\python.exe D:\Coil-Profile-Plotter\HFML-VSM_CoilProfilePlotter\coilprofile.py inputfile
+```
 And it will process the data in `inputfile` and show you the plot using plt.show()
  
-Or optionally use a second argument like this:
+Or optionally use a second argument like this:\
+**Linux:**
 ```
 ./coilprofile.py inputfile outputfile
+```
+**Windows:**
+```
+C:\ProgramData\Anaconda3\python.exe D:\Coil-Profile-Plotter\HFML-VSM_CoilProfilePlotter\coilprofile.py inputfile outputfile
 ```
 And the program will use plt.savefig() to save the plot to `outputfile` instead.
 Note that `outputfile` should have one of the filename extensions supported by matplotlib (e.g. `.pdf`, `.png`)
