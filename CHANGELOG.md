@@ -20,3 +20,6 @@
 - The visible data is now on the millimeter axis, and the motor coordinate axis now has the transparent axis. Doing this makes matplotlib automatically choose the right colors.
 - Cleanup of unused variables
 - Replaced extrapolstep with extrapol, because it is user-friendly to set the amount to extrapolate in millimeter.
+
+### 2.1
+- Instead of discarding a line if it starts with '#' '\n' etc, it now uses .isdigit(). For increased compatibility with data files that have header lines that do not start with a hashtag.

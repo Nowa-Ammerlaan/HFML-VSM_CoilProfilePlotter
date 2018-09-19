@@ -127,6 +127,7 @@ When this is enabled, the VSM's signal is divided by the reference signal from t
 This should help in correcting any errors introduced due to position dependent friction.
 Note that disabling this might cause fit to fail, it is recommended to keep this enabled at all times unless you have no reference data available.
 
+**timepos = _int_**\
 **sigfreqpos = _int_**\
 **sigXpos = _int_**\
 **sigYpos = _int_**\
@@ -134,5 +135,4 @@ Note that disabling this might cause fit to fail, it is recommended to keep this
 **refXpos = _int_**\
 **refYpos = _int_**\
 **potmerDCpos = _int_**\
-Sometimes additional devices are measured simultaneously with the lock-ins, here you can set in which columns the relevant data is stored. 
-Note that time will always be in the zeroth column.
+Sometimes additional devices are measured simultaneously with the lock-ins, here you can set in which columns the relevant data is stored.

@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "2.0"
+__version__ = "2.1"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -78,9 +78,9 @@ dividebyref = 'yes'  # Divide sigX by refX to make the data relative to the
 # When measuring additional devices as well as the 2 SR830s,
 # the index of the columns that correspond to the reference and signal
 # lock in's data should be inserted into their respective variable
-# Note that time is always 0
 # e.g: "Time(sec)	Dev2_freq	Dev2SR830_X	Dev2_Y	Dev3_freq
 # Dev3SR830_X	Dev3_Y	Dev4_K2000(V)"
+timepos = 0  # Default 0
 sigfreqpos = 1  # Default: 1
 sigXpos = 2  # Default: 2
 sigYpos = 3  # Default: 3
@@ -125,20 +125,29 @@ potmetDC = np.zeros(num_lines)
 h = 0  # Counting integer
 
 for line in file:
-    if line.startswith(('#', '\s', '\n', '\t', 'Time(sec)')):
-        # Skip the header and empty lines
-        continue
-    # For each line split the columns into dataline and move into data arrays
-    dataline = line.split()
-    time[h] = dataline[0]
-    sigfreq[h] = dataline[sigfreqpos]
-    sigX[h] = dataline[sigXpos]
-    sigY[h] = dataline[sigYpos]
-    reffreq[h] = dataline[reffreqpos]
-    refX[h] = dataline[refXpos]
-    refY[h] = dataline[refYpos]
-    potmetDC[h] = dataline[potmetDCpos]
-    h = h + 1
+    # Some data files start there lines with a space or tab, this would cause
+    # isdigit() to report false. This finds the first index that is not a space
+    w = 0
+    for q in range(0, len(line)-1):
+        if line[q].isspace():
+            w = w + 1
+        else:
+            break
+
+    # Now check if the first non-space entry is a number, else it cannot be
+    # a data line
+    if line[w].isdigit():
+        # For each line split the columns into dataline and move data to arrays
+        dataline = line.split()
+        time[h] = dataline[timepos]
+        sigfreq[h] = dataline[sigfreqpos]
+        sigX[h] = dataline[sigXpos]
+        sigY[h] = dataline[sigYpos]
+        reffreq[h] = dataline[reffreqpos]
+        refX[h] = dataline[refXpos]
+        refY[h] = dataline[refYpos]
+        potmetDC[h] = dataline[potmetDCpos]
+        h = h + 1
 
 # Make the amplitude relative to the reference amplitude, this becomes
 # relavant near the beginning and end of the position loop where the
@@ -319,11 +328,11 @@ if fit == 'yes' or fit == 'Yes':
                     params[3], params[4])
 
     print("\nFit paramaters:")
-    print("x-offset = \t%f \u00B1 %f m" % (params[0], params_err[0]))
+    print("x-offset = \t%f \u00B1 %f mm" % (params[0], params_err[0]))
     print("amplitude = \t%f \u00B1 %f" % (params[1], params_err[1]))
-    print("inner radius = \t%f \u00B1 %f m" % (params[2], params_err[2]))
-    print("outer radius = \t%f \u00B1 %f m" % (params[3], params_err[3]))
-    print("length = \t%f \u00B1 %f m" % (params[4], params_err[4]))
+    print("inner radius = \t%f \u00B1 %f mm" % (params[2], params_err[2]))
+    print("outer radius = \t%f \u00B1 %f mm" % (params[3], params_err[3]))
+    print("length = \t%f \u00B1 %f mm" % (params[4], params_err[4]))
 
     # if enabled, move the x-axis such that the coilcenter is zero
     if (makecoordrel == 'yes' or makecoordrel == 'Yes'):
