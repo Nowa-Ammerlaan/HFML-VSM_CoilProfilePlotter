@@ -306,7 +306,8 @@ if fit == 'yes' or fit == 'Yes':
     p0 = [guess_x0, guess_amp, guess_r1, guess_r2, guess_L]
 
     # Fit
-    params, params_covar = curve_fit(func, mmcoord, datapoint, p0=p0)
+    params, params_covar = curve_fit(func, mmcoord, datapoint, p0=p0,
+                                     sigma=datastddev, absolute_sigma=True)
 
     # Calculate stddev from covar
     params_err = np.sqrt(np.diag(params_covar))
