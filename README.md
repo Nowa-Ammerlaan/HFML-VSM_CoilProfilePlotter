@@ -103,7 +103,7 @@ How high should the signal be before it is considered a peak?
 
 **a = _float_**\
 **b = _float_**\
-Motor-coordinates = a * potentiometer-DC-voltage + b
+Motor_coordinates = a * potentiometer_DC_voltage + b
 
 **rm_lastpoint = _int_**
 Sometimes the last point is off, say yes here to remove it from the data
