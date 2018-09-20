@@ -160,41 +160,27 @@ for line in file:
 if dividebyref == 'yes' or dividebyref == 'Yes':
     relsigX = sigX / refX
     relsigY = sigY / refY
-    
-# Remove all extra zeros
-time = np.trim_zeros(time)
-sigfreq = np.trim_zeros(sigfreq)
-sigX = np.trim_zeros(sigX)
-sigY = np.trim_zeros(sigY)
-reffreq = np.trim_zeros(reffreq)
-refX = np.trim_zeros(refX)
-refY = np.trim_zeros(refY)
-potmetDC = np.trim_zeros(potmetDC)
-
-if dividebyref == 'yes' or dividebyref == 'Yes':
     relsigX[np.isneginf(relsigX)] = 0
     relsigY[np.isneginf(relsigY)] = 0
     relsigX[np.isposinf(relsigX)] = 0
     relsigY[np.isposinf(relsigY)] = 0
     relsigX = np.nan_to_num(relsigX)
     relsigY = np.nan_to_num(relsigY)
-    relsigX = np.trim_zeros(relsigX)
-    relsigY = np.trim_zeros(relsigY)
 
 
 """Find peaks"""
 
 # Introduce new arrays for the processed data
-datapoint = np.zeros(time.size)
-peakpos = np.zeros(time.size)
-datastddev = np.zeros(time.size)
-tmpindices = np.zeros(time.size)
+datapoint = np.zeros(num_lines)
+peakpos = np.zeros(num_lines)
+datastddev = np.zeros(num_lines)
+tmpindices = np.zeros(num_lines)
 
 if timeinmillisec == 'yes' or timeinmillisec == 'Yes':
     time = time * 1e-3
 
-timeofoneindex = np.average(np.diff(time))  # Moving 1 index corresponds
-# to this much in time
+timeofoneindex = np.average(np.diff(np.trim_zeros(time)))  # Moving 1 index 
+# corresponds to this much in time
 indexwidth = int(round(reacttime / timeofoneindex))  # How many indices
 # around a point should also be above minpeakV?
 peakindexrange = int(round((stepdur - (2 * reacttime)) / timeofoneindex))
@@ -205,7 +191,7 @@ k = 0  # Counting integer
 j = 0  # Counting integer
 
 # Find peaks
-for i in range(0, time.size - 1):
+for i in range(0, num_lines - 1):
     # Only use data where the frequencies correspond to approximatly
     # the frequency that was input into the motor
     if (freq - deltafreq <= sigfreq[i] <= freq + deltafreq and
@@ -225,7 +211,7 @@ for i in range(0, time.size - 1):
 
             if tmpindices.size <= indexwidth:
                 # The peak is too small, it must be a random fluctuation
-                tmpindices = np.zeros(time.size)  # Reset tmp array
+                tmpindices = np.zeros(num_lines)  # Reset tmp array
                 j = 0  # Reset counting integer
                 peakbit = 0  # Reset peakbit
                 print("\nA peak was found, however it lasted for less",
@@ -245,7 +231,7 @@ for i in range(0, time.size - 1):
             midindex = int(round((startindex + endindex) / 2))
 
             p = 0  # Counting integer
-            peaksig = np.zeros(time.size)  # New tmp array for the
+            peaksig = np.zeros(num_lines)  # New tmp array for the
             # relevant data
 
             for t in range(midindex - peakindexrange,
@@ -266,7 +252,7 @@ for i in range(0, time.size - 1):
 
             peakbit = 0  # Reset peakbit
             j = 0  # Reset counting integer
-            tmpindices = np.zeros(time.size)  # reset tmp array
+            tmpindices = np.zeros(num_lines)  # reset tmp array
             k = k + 1
 
 
