@@ -367,6 +367,8 @@ if fit == 'yes' or fit == 'Yes':
                                   mmcoord[-1] + mmextrapol, num=1000)
             data_fit = func(fit_pos, params[0] - offset, params[1], params[2],
                             params[3], params[4])
+else:
+    makecoordrel = 'no'
 
 
 """Plot"""
@@ -392,17 +394,17 @@ ax1.set_xlim(mmcoord[0] - mmextrapol, mmcoord[-1] + mmextrapol)
 
 if fit == 'yes' or fit == 'Yes':
     ax1.plot(fit_pos, data_fit)
-    ax1.set_ylim(min(np.min(datapoint) - minpeakV,
-                     np.min(data_fit) - minpeakV),
-                 max(np.max(datapoint) + minpeakV,
-                     np.max(data_fit) + minpeakV))
+    ax1.set_ylim(min(np.min(datapoint) - yextrapol,
+                     np.min(data_fit) - yextrapol),
+                 max(np.max(datapoint) + yextrapol,
+                     np.max(data_fit) + yextrapol))
 else:
     ax1.set_ylim(np.min(datapoint) - yextrapol, np.max(datapoint) + yextrapol)
 
+ax1.axhline(color='black', alpha=0.5)
 if (makecoordrel == 'yes' or makecoordrel == 'Yes'):
     # If a center has been found, add lines to show it
     ax1.axvline(color='black', alpha=0.5)
-    ax1.axhline(color='black', alpha=0.5)
 
 ax2 = ax1.twiny()  # Second x-axis is twin to first
 
