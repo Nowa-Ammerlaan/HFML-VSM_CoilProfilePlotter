@@ -51,7 +51,7 @@ C:\ProgramData\Anaconda3\python.exe D:\Coil-Profile-Plotter\HFML-VSM_CoilProfile
 ```
 And the program will use plt.savefig() to save the plot to `outputfile` instead.
 Note that `outputfile` should have one of the filename extensions supported by matplotlib (e.g. `.pdf`, `.png`)
-or the `.tex` extension, in which case it will use matplotlib2tikz instead.
+or the `.tex` extension, in which case it will use matplotlib2tikz.
 
 ## Can I use/adapt your program?
 Of course you can, it's licensed under GPLv3.
