@@ -79,6 +79,9 @@ How many millimeters does the VSM motor move when it moves 1 in motor coordinate
 If fit=yes, how far should the fit be extrapolated (in mm)
 I recommend you start with this set to 0 and then see how that looks first. And if it looks safe turn this up a bit. Note that this variable also controls the limits of the x-axis.
 
+**yextrapol = _float_**
+This parameter controls how much is added/substracted from the limits of the y axis
+
 **stepdur = _float_**
 How long does the VSM vibrate at one position (in seconds)? 
 This is used in combination with reacttime to calculate how many points there are within a peak.
@@ -112,10 +115,10 @@ Sometimes the first point is off, how many peaks should be removed from the begi
 **fit = _'yes'_**
 Fit the theoretical coil profile to the data, this works best if at both ends of the coil were within the range of the position loop. If the fit is weird or fails, try adjusting the 'guess_' parameters.
 
-**guess_x0 = _float_** Where is the coil center approximately? If unsure plot with fit='no' first, and determine the approximate center from the plot (in mm).
-**guess_r1 = _float_** Approximate inner radius (in mm).
-**guess_r2 = _float_** Approximate outer radius (in mm).
-**guess_L = _float_** Approximate length (in mm).
+**guess_x0 = _float_** Where is the coil center approximately? If unsure plot with fit='no' first, and determine the approximate center from the plot (in mm).\
+**guess_r1 = _float_** Approximate inner radius (in mm).\
+**guess_r2 = _float_** Approximate outer radius (in mm).\
+**guess_L = _float_** Approximate length (in mm).\
 **guess_N = _float_** Approximate number of windings.
 
 **makecoordrel = _'yes'_**
@@ -136,3 +139,5 @@ Note that disabling this might cause fit to fail, it is recommended to keep this
 **refYpos = _int_**\
 **potmerDCpos = _int_**\
 Sometimes additional devices are measured simultaneously with the lock-ins, here you can set in which columns the relevant data is stored.
+
+**timeinmillisec = _'yes'_** Set to yes if the time in the time-colomn is in millliseconds, if disabled time is assumed to be in seconds.

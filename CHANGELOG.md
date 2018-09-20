@@ -23,3 +23,8 @@
 
 ### 2.1
 - Instead of discarding a line if it starts with '#' '\n' etc, it now uses .isdigit(). For increased compatibility with data files that have header lines that do not start with a hashtag.
+
+### 2.2
+- NaN, inf, -inf are now set to 0 when dividebyref is enabled, this to remove probelmatic points where the reference is 0
+- Added option to set time in milliseconds for datafiles that use this
+- Added 'yextrapol' to control how limits of y axis

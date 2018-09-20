@@ -33,10 +33,10 @@ from scipy.optimize import curve_fit
 
 """Config"""
 
-# Set the paramaters that were used in the data acquisition
 convert = 5.376e-3  # How many mm does the motor move
 # when it moves 1 motor position?
-mmextrapol = 2  # (mm) How many mm to extrapolate
+mmextrapol = 2  # (mm) How many mm to extrapolate/to add to xlim
+yextrapol = 0.002  # How much to add to ylim
 
 stepdur = 20  # (s) # How long is the VSM at 1 position?
 reacttime = 5  # (s) It takes a certain amount of time for the voltage to reach
@@ -45,25 +45,24 @@ reacttime = 5  # (s) It takes a certain amount of time for the voltage to reach
 mmdisp = 1.08  # (mm) How much does the VSM vibrate at a position? (this is
 # NOT the amplitude, but two times the amplitude)
 freq = 18.1  # (Hz)
-deltafreq = 0.2  # (Hz) frequency must be between freq-deltafreq and
+deltafreq = 0.3  # (Hz) frequency must be between freq-deltafreq and
 # freq+deltafreq for it to be a valid datapoint
 
-minpeakV = 0.1e-4  # (V) signal must be minimally this high for it to be
+minpeakV = 0.4e-4  # (V) signal must be minimally this high for it to be
 # considered a data point
 
 # Potentio meter calibaration
 # motor coordinates = a * potentiometer DC voltage + b
-a = 8836.934199
-b = 1868.461891
+a = 8830.788615
+b = 238.4372817
 
 # The last peaks can be problematic because the measurement does not stop
 # automaically at the end of the position loop,
-# set this to remove a number of points from the end
+# set this to remove a number of peaks from the end
 rm_lastpoint = 0
 rm_firstpoint = 0  # Amount of peaks to remove from beginning
 
-
-fit = 'yes'  # Fit theoretical coil profile to the data
+fit = 'no'  # Fit theoretical coil profile to the data
 guess_x0 = 15  # mm where is the coil center approximatly?
 guess_r1 = 1.6  # mm approximate inner radius
 guess_r2 = 2.8  # mm approximate outer radius
@@ -89,7 +88,11 @@ refXpos = 5  # Default: 5
 refYpos = 6  # Default: 6
 potmetDCpos = 7  # Default 7
 
-"""Program"""
+timeinmillisec = 'yes'  # set to yes if time in data file is in milliseconds 
+# instead of seconds
+
+
+"""Read file"""
 
 # Check that a data file is given as argument and set the filename parameter
 if len(sys.argv) < 2:
@@ -111,6 +114,8 @@ num_lines = len(file)
 
 print("Loaded file: %s \nThis file has %i lines\n" % (filename, num_lines))
 
+
+"""Sort data from file into arrays"""
 
 # Create arrays for all data columns
 time = np.zeros(num_lines)
@@ -155,7 +160,7 @@ for line in file:
 if dividebyref == 'yes' or dividebyref == 'Yes':
     relsigX = sigX / refX
     relsigY = sigY / refY
-
+    
 # Remove all extra zeros
 time = np.trim_zeros(time)
 sigfreq = np.trim_zeros(sigfreq)
@@ -167,8 +172,17 @@ refY = np.trim_zeros(refY)
 potmetDC = np.trim_zeros(potmetDC)
 
 if dividebyref == 'yes' or dividebyref == 'Yes':
+    relsigX[np.isneginf(relsigX)] = 0
+    relsigY[np.isneginf(relsigY)] = 0
+    relsigX[np.isposinf(relsigX)] = 0
+    relsigY[np.isposinf(relsigY)] = 0
+    relsigX = np.nan_to_num(relsigX)
+    relsigY = np.nan_to_num(relsigY)
     relsigX = np.trim_zeros(relsigX)
     relsigY = np.trim_zeros(relsigY)
+
+
+"""Find peaks"""
 
 # Introduce new arrays for the processed data
 datapoint = np.zeros(time.size)
@@ -176,13 +190,15 @@ peakpos = np.zeros(time.size)
 datastddev = np.zeros(time.size)
 tmpindices = np.zeros(time.size)
 
+if timeinmillisec == 'yes' or timeinmillisec == 'Yes':
+    time = time * 1e-3
+
 timeofoneindex = np.average(np.diff(time))  # Moving 1 index corresponds
 # to this much in time
 indexwidth = int(round(reacttime / timeofoneindex))  # How many indices
 # around a point should also be above minpeakV?
 peakindexrange = int(round((stepdur - (2 * reacttime)) / timeofoneindex))
 # How many indices is a peak wide?
-
 
 peakbit = 0  # Bit to keep track of if a peak has been detected
 k = 0  # Counting integer
@@ -259,7 +275,6 @@ datapoint = np.trim_zeros(datapoint)
 datastddev = np.trim_zeros(datastddev)
 peakpos = np.trim_zeros(peakpos)
 
-
 # Remove begining points if necessary
 for u in range(0, rm_firstpoint):
     datapoint = np.delete(datapoint, 0)
@@ -284,7 +299,8 @@ posextrapol = mmextrapol / convert
 disp = mmdisp / convert
 
 
-# Fit, if it is enabled in config
+"""Fit"""
+
 if fit == 'yes' or fit == 'Yes':
 
     def func(x, x0, A, r1, r2, L):
@@ -353,7 +369,8 @@ if fit == 'yes' or fit == 'Yes':
                             params[3], params[4])
 
 
-# Plot
+"""Plot"""
+
 fig, ax1 = plt.subplots()
 
 ax1.minorticks_on()
@@ -380,7 +397,7 @@ if fit == 'yes' or fit == 'Yes':
                  max(np.max(datapoint) + minpeakV,
                      np.max(data_fit) + minpeakV))
 else:
-    ax1.set_ylim(np.min(datapoint) - minpeakV, np.max(datapoint) + minpeakV)
+    ax1.set_ylim(np.min(datapoint) - yextrapol, np.max(datapoint) + yextrapol)
 
 if (makecoordrel == 'yes' or makecoordrel == 'Yes'):
     # If a center has been found, add lines to show it
@@ -403,7 +420,8 @@ ax1.grid(which='both', axis='both')
 plt.tight_layout()
 
 
-# Save plot, if second argument is provided
+"""Save"""
+
 if len(sys.argv) == 3:
     # If there is a second argument, interpret it as output file
     fileout = sys.argv[2]
