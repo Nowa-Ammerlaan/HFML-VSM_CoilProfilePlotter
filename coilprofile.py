@@ -228,7 +228,9 @@ for i in range(0, num_lines - 1):
             midindex = int(round((startindex + endindex) / 2))
 
             p = 0  # Counting integer
-            peaksig = np.zeros(num_lines)  # New tmp array for the
+            peaksig = np.zeros(num_lines)  
+            possig = np.zeros(num_lines)
+            # New tmp array for the
             # relevant data
 
             for t in range(midindex - peakindexrange,
@@ -238,12 +240,14 @@ for i in range(0, num_lines - 1):
                     peaksig[p] = relsigX[t]
                 else:
                     peaksig[p] = sigX[t]
+                possig[p] = a * potmetDC[t] + b
                 p = p + 1
 
             # Trim zeros, save time index, average and stddev of
             # peak data
             peaksig = np.trim_zeros(peaksig)
-            peakpos[k] = a * potmetDC[midindex] + b
+            possig = np.trim_zeros(possig)
+            peakpos[k] = np.average(possig)
             datapoint[k] = np.average(peaksig)
             datastddev[k] = np.std(peaksig)
 
