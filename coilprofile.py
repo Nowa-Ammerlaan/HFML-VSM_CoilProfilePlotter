@@ -365,8 +365,7 @@ ax1.minorticks_on()
 ax1.errorbar(mmcoord, datapoint, xerr=(mmdisp / 2), yerr=datastddev,
              linestyle='None', fmt='.', elinewidth=0.5, )
 
-if ((makecoordrel == 'yes' or makecoordrel == 'Yes') and
-   (fit == 'yes' or fit == 'Yes')):
+if makecoordrel == 'yes' or makecoordrel == 'Yes':
     ax1.set_xlabel("Sample position relative to the coil center (mm)")
 else:
     ax1.set_xlabel("Sample position (mm)")
