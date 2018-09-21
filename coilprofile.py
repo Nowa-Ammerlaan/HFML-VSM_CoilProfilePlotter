@@ -211,15 +211,15 @@ for i in range(0, num_lines - 1):
 
             if tmpindices.size <= indexwidth:
                 # The peak is too small, it must be a random fluctuation
-                tmpindices = np.zeros(num_lines)  # Reset tmp array
-                j = 0  # Reset counting integer
-                peakbit = 0  # Reset peakbit
                 print("\nA peak was found, however it lasted for less",
                       "then %f seconds, it will be ignored." % (reacttime),
                       "If it shouldn't be ignored decrease",
                       "reacttime = %f s." % (reacttime),
                       "It might be a good idea to",
                       "increase minpeakV = %f V" % (minpeakV))
+                tmpindices = np.zeros(num_lines)  # Reset tmp array
+                j = 0  # Reset counting integer
+                peakbit = 0  # Reset peakbit
                 continue
 
             # The peak is not a random fluctuation, where does it begin
@@ -263,20 +263,20 @@ peakpos = np.trim_zeros(peakpos)
 
 # Remove begining points if necessary
 for u in range(0, rm_firstpoint):
+    print("\nRemoving peak %i" % (u),
+          " because rm_firstpoint=%i" % (rm_firstpoint))
     datapoint = np.delete(datapoint, 0)
     datastddev = np.delete(datastddev, 0)
     peakpos = np.delete(peakpos, 0)
-    print("\nRemoving peak %i" % (u),
-          " because rm_firstpoint=%i" % (rm_firstpoint))
 
 
 # Remove endpoints, if necessary
 for t in range(peakpos.size - 1, (peakpos.size - 1) - rm_lastpoint, -1):
+    print("\nRemoving peak %i" % (t),
+          "because rm_lastpoint=%i" % (rm_lastpoint))
     datapoint = np.delete(datapoint, -1)
     datastddev = np.delete(datastddev, -1)
     peakpos = np.delete(peakpos, -1)
-    print("\nRemoving peak %i" % (t),
-          "because rm_lastpoint=%i" % (rm_lastpoint))
 
 
 # Motor coords to millimeter and mm units from config to motor coords.
@@ -323,18 +323,19 @@ if fit == 'yes' or fit == 'Yes':
     # Calculate stddev from covar
     params_err = np.sqrt(np.diag(params_covar))
 
-    # Make points out of fit
-    fit_pos = np.linspace(mmcoord[0] - mmextrapol,
-                          mmcoord[-1] + mmextrapol, num=1000)
-    data_fit = func(fit_pos, params[0], params[1], params[2],
-                    params[3], params[4])
-
     print("\nFit paramaters:")
     print("x-offset = \t%f \u00B1 %f mm" % (params[0], params_err[0]))
     print("amplitude = \t%f \u00B1 %f" % (params[1], params_err[1]))
     print("inner radius = \t%f \u00B1 %f mm" % (params[2], params_err[2]))
     print("outer radius = \t%f \u00B1 %f mm" % (params[3], params_err[3]))
     print("length = \t%f \u00B1 %f mm" % (params[4], params_err[4]))
+    
+    # Make points out of fit
+    fit_pos = np.linspace(mmcoord[0] - mmextrapol,
+                          mmcoord[-1] + mmextrapol, num=1000)
+    data_fit = func(fit_pos, params[0], params[1], params[2],
+                    params[3], params[4])
+
 
     # if enabled, move the x-axis such that the coilcenter is zero
     if (makecoordrel == 'yes' or makecoordrel == 'Yes'):
@@ -415,20 +416,20 @@ if len(sys.argv) == 3:
     if fileout.endswith(".tex"):
         # If the file ends in .tex, use tikz to save it
         from matplotlib2tikz import save as tikz_save
-        tikz_save(fileout, figureheight='\\figH', figurewidth='\\figW')
         print("\nSaving plot as %s using matplotlib2tikz" % (fileout))
+        tikz_save(fileout, figureheight='\\figH', figurewidth='\\figW')
         sys.exit(0)
     else:
         # If not use regular save function
-        plt.savefig(fileout)
         print("\nSaving plot as %s" % (fileout))
+        plt.savefig(fileout)
         sys.exit(0)
 
 else:
     # No output argument, so just show the plot instead
-    plt.show()
     print("\nShowing plot, to save the plot parse a output file as",
           "second argument. Valid outut files are files that are supported",
           "by matplotlib's savefig (e.g. .pdf, .png)",
           "or matplotlib2tikz (.tex)")
+    plt.show()
     sys.exit(0)
