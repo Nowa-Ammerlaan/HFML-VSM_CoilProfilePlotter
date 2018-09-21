@@ -36,10 +36,10 @@ from scipy.optimize import curve_fit
 convert = 5.376e-3  # How many mm does the motor move
 # when it moves 1 motor position?
 mmextrapol = 2  # (mm) How many mm to extrapolate/to add to xlim
-yextrapol = 0.002  # How much to add to ylim
+yextrapol = 0.0001  # How much to add to ylim
 
 stepdur = 20  # (s) # How long is the VSM at 1 position?
-reacttime = 5  # (s) It takes a certain amount of time for the voltage to reach
+reacttime = 2  # (s) It takes a certain amount of time for the voltage to reach
 # it's peak value, these data points should not be included in the peak.
 
 mmdisp = 1.08  # (mm) How much does the VSM vibrate at a position? (this is
@@ -48,7 +48,7 @@ freq = 18.1  # (Hz)
 deltafreq = 0.3  # (Hz) frequency must be between freq-deltafreq and
 # freq+deltafreq for it to be a valid datapoint
 
-minpeakV = 0.4e-4  # (V) signal must be minimally this high for it to be
+minpeakV = 1e-5  # (V) signal must be minimally this high for it to be
 # considered a data point
 
 # Potentio meter calibaration
@@ -181,9 +181,7 @@ if timeinmillisec == 'yes' or timeinmillisec == 'Yes':
 
 timeofoneindex = np.average(np.diff(np.trim_zeros(time)))  # Moving 1 index 
 # corresponds to this much in time
-indexwidth = int(round(reacttime / timeofoneindex))  # How many indices
-# around a point should also be above minpeakV?
-peakindexrange = int(round((stepdur - (2 * reacttime)) / timeofoneindex))
+peakindexrange = int(round((stepdur - (2 * reacttime)) / (2 * timeofoneindex)))
 # How many indices is a peak wide?
 
 peakbit = 0  # Bit to keep track of if a peak has been detected
@@ -209,14 +207,13 @@ for i in range(0, num_lines - 1):
         if peakbit == 1:
             tmpindices = np.trim_zeros(tmpindices)  # Trim extra zeros
 
-            if tmpindices.size <= indexwidth:
+            if tmpindices.size <= peakindexrange * 2:
                 # The peak is too small, it must be a random fluctuation
                 print("\nA peak was found, however it lasted for less",
-                      "then %f seconds, it will be ignored." % (reacttime),
-                      "If it shouldn't be ignored decrease",
-                      "reacttime = %f s." % (reacttime),
-                      "It might be a good idea to",
-                      "increase minpeakV = %f V" % (minpeakV))
+                      "then %f seconds," % (stepdur - 2 * reacttime),
+                      "it will be ignored.",
+                      "If it shouldn't be ignored increase",
+                      "reacttime = %f s." % (reacttime))
                 tmpindices = np.zeros(num_lines)  # Reset tmp array
                 j = 0  # Reset counting integer
                 peakbit = 0  # Reset peakbit
