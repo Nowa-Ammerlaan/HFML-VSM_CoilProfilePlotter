@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "2.1"
+__version__ = "2.2"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -53,8 +53,8 @@ minpeakV = 1e-5  # (V) signal must be minimally this high for it to be
 
 # Potentio meter calibaration
 # motor coordinates = a * potentiometer DC voltage + b
-a = 8830.788615
-b = 238.4372817
+a = 8858.945249
+b = 483.7063215
 
 # The last peaks can be problematic because the measurement does not stop
 # automaically at the end of the position loop,
@@ -88,7 +88,7 @@ refXpos = 5  # Default: 5
 refYpos = 6  # Default: 6
 potmetDCpos = 7  # Default 7
 
-timeinmillisec = 'yes'  # set to yes if time in data file is in milliseconds 
+timeinmillisec = 'yes'  # set to yes if time in data file is in milliseconds
 # instead of seconds
 
 
@@ -130,10 +130,10 @@ potmetDC = np.zeros(num_lines)
 h = 0  # Counting integer
 
 for line in file:
-    # Some data files start there lines with a space or tab, this would cause
+    # Some data files start lines with a space or tab, this would cause
     # isdigit() to report false. This finds the first index that is not a space
     w = 0
-    for q in range(0, len(line)-1):
+    for q in range(0, len(line) - 1):
         if line[q].isspace():
             w = w + 1
         else:
@@ -179,7 +179,7 @@ tmpindices = np.zeros(num_lines)
 if timeinmillisec == 'yes' or timeinmillisec == 'Yes':
     time = time * 1e-3
 
-timeofoneindex = np.average(np.diff(np.trim_zeros(time)))  # Moving 1 index 
+timeofoneindex = np.average(np.diff(np.trim_zeros(time)))  # Moving 1 index
 # corresponds to this much in time
 peakindexrange = int(round((stepdur - (2 * reacttime)) / (2 * timeofoneindex)))
 # How many indices is a peak wide?
@@ -228,7 +228,7 @@ for i in range(0, num_lines - 1):
             midindex = int(round((startindex + endindex) / 2))
 
             p = 0  # Counting integer
-            peaksig = np.zeros(num_lines)  
+            peaksig = np.zeros(num_lines)
             possig = np.zeros(num_lines)
             # New tmp array for the
             # relevant data
@@ -330,13 +330,12 @@ if fit == 'yes' or fit == 'Yes':
     print("inner radius = \t%f \u00B1 %f mm" % (params[2], params_err[2]))
     print("outer radius = \t%f \u00B1 %f mm" % (params[3], params_err[3]))
     print("length = \t%f \u00B1 %f mm" % (params[4], params_err[4]))
-    
+
     # Make points out of fit
     fit_pos = np.linspace(mmcoord[0] - mmextrapol,
                           mmcoord[-1] + mmextrapol, num=1000)
     data_fit = func(fit_pos, params[0], params[1], params[2],
                     params[3], params[4])
-
 
     # if enabled, move the x-axis such that the coilcenter is zero
     if (makecoordrel == 'yes' or makecoordrel == 'Yes'):
