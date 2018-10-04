@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "2.2"
+__version__ = "2.3"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -36,14 +36,12 @@ from scipy.optimize import curve_fit
 convert = 5.376e-3  # How many mm does the motor move
 # when it moves 1 motor position?
 mmextrapol = 2  # (mm) How many mm to extrapolate/to add to xlim
-yextrapol = 0.0001  # How much to add to ylim
+yextrapol = 0.005  # How much to add to ylim
 
 stepdur = 20  # (s) # How long is the VSM at 1 position?
 reacttime = 2  # (s) It takes a certain amount of time for the voltage to reach
 # it's peak value, these data points should not be included in the peak.
 
-mmdisp = 1.08  # (mm) How much does the VSM vibrate at a position? (this is
-# NOT the amplitude, but two times the amplitude)
 freq = 18.1  # (Hz)
 deltafreq = 0.3  # (Hz) frequency must be between freq-deltafreq and
 # freq+deltafreq for it to be a valid datapoint
@@ -62,8 +60,9 @@ b = 483.7063215
 rm_lastpoint = 0
 rm_firstpoint = 0  # Amount of peaks to remove from beginning
 
-fit = 'no'  # Fit theoretical coil profile to the data
+fit = 'yes'  # Fit theoretical coil profile to the data
 guess_x0 = 15  # mm where is the coil center approximatly?
+guess_amp = 1.08  # mm what is the VSM's amplitude
 guess_r1 = 1.6  # mm approximate inner radius
 guess_r2 = 2.8  # mm approximate outer radius
 guess_L = 12  # mm approximate length
@@ -88,7 +87,7 @@ refXpos = 5  # Default: 5
 refYpos = 6  # Default: 6
 potmetDCpos = 7  # Default 7
 
-timeinmillisec = 'yes'  # set to yes if time in data file is in milliseconds
+timeinmillisec = 'no'  # set to yes if time in data file is in milliseconds
 # instead of seconds
 
 
@@ -283,7 +282,6 @@ for t in range(peakpos.size - 1, (peakpos.size - 1) - rm_lastpoint, -1):
 # Motor coords to millimeter and mm units from config to motor coords.
 mmcoord = peakpos * convert
 posextrapol = mmextrapol / convert
-disp = mmdisp / convert
 
 
 """Fit"""
@@ -314,7 +312,7 @@ if fit == 'yes' or fit == 'Yes':
     if dividebyref == 'yes' or dividebyref == 'Yes':
         guess_amp = 1
     else:
-        guess_amp = np.sqrt(2) * np.pi**2 * mmdisp * freq * guess_N * 1e-7
+        guess_amp = np.sqrt(2) * np.pi**2 * guess_amp * freq * guess_N * 1e-7
     p0 = [guess_x0, guess_amp, guess_r1, guess_r2, guess_L]
 
     # Fit
@@ -363,7 +361,7 @@ else:
 fig, ax1 = plt.subplots()
 
 ax1.minorticks_on()
-ax1.errorbar(mmcoord, datapoint, xerr=(mmdisp / 2), yerr=datastddev,
+ax1.errorbar(mmcoord, datapoint, yerr=datastddev,
              linestyle='None', fmt='.', elinewidth=0.5, )
 
 if makecoordrel == 'yes' or makecoordrel == 'Yes':
@@ -397,8 +395,8 @@ ax2 = ax1.twiny()  # Second x-axis is twin to first
 # Make second plot on the second axis, but make it transparent
 # because otherwise the plot would be shown twice
 ax2.minorticks_on()
-ax2.errorbar(peakpos, datapoint, xerr=(disp / 2),
-             yerr=datastddev, linestyle='None', color='white', alpha=0)
+ax2.errorbar(peakpos, datapoint, yerr=datastddev,
+             linestyle='None', fmt='.', elinewidth=0.5, color='white', alpha=0)
 
 ax2.set_xlabel("Motor position")
 ax2.set_xlim(peakpos[0] - posextrapol, peakpos[-1] + posextrapol)
