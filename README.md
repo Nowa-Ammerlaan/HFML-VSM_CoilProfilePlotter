@@ -113,6 +113,7 @@ Sometimes the first point is off, how many peaks should be removed from the begi
 Fit the theoretical coil profile to the data, this works best if at both ends of the coil were within the range of the position loop. If the fit is weird or fails, try adjusting the 'guess_' parameters.
 
 **guess_x0 = _float_** Where is the coil center approximately? If unsure plot with fit='no' first, and determine the approximate center from the plot (in mm).\
+<<<<<<< HEAD
 **guess_amp = _float_** What was the VSM's amplitude (in mm).\
 **guess_r1 = _float_** Approximate inner radius (in mm).\
 **guess_r2 = _float_** Approximate outer radius (in mm).\
