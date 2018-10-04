@@ -28,3 +28,6 @@
 - NaN, inf, -inf are now set to 0 when dividebyref is enabled, this to remove probelmatic points where the reference is 0
 - Added option to set time in milliseconds for datafiles that use this
 - Added 'yextrapol' to control how limits of y axis
+
+### 2.3
+- Removed the errorbars on the x-axis, the amplitude of the VSM is not actually an error.

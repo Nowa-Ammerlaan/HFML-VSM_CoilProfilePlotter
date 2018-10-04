@@ -89,9 +89,6 @@ This is used in combination with reacttime to calculate how many points there ar
 **reacttime = _float_**
 The voltage will not jump instantly from background noise level to a peak, the data points that are above the threshold but not in the peak should be ignored. Set this according to how long it takes for the system to respond, too high is better then too low (in seconds).
 
-**mmdisp = _float_**
-The displacement, or two times the amplitude of the VSM's vibration, this is used as the error in the position (in mm).
-
 **freq = _float_**
 The frequency of the VSM's vibration, this is compared to the frequency measured by the lock-in (in Hz).
 
@@ -116,6 +113,7 @@ Sometimes the first point is off, how many peaks should be removed from the begi
 Fit the theoretical coil profile to the data, this works best if at both ends of the coil were within the range of the position loop. If the fit is weird or fails, try adjusting the 'guess_' parameters.
 
 **guess_x0 = _float_** Where is the coil center approximately? If unsure plot with fit='no' first, and determine the approximate center from the plot (in mm).\
+**guess_amp = _float_** What was the VSM's amplitude.\
 **guess_r1 = _float_** Approximate inner radius (in mm).\
 **guess_r2 = _float_** Approximate outer radius (in mm).\
 **guess_L = _float_** Approximate length (in mm).\
