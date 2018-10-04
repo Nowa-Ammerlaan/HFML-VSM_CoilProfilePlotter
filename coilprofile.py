@@ -370,7 +370,7 @@ else:
     ax1.set_xlabel("Sample position (mm)")
 
 if dividebyref == 'yes' or dividebyref == 'Yes':
-    ax1.set_ylabel("Relative peak voltage sigX / refX")
+    ax1.set_ylabel("Relative peak voltage sigX/refX")
 else:
     ax1.set_ylabel("Peak signal voltage sigX (V)")
 
