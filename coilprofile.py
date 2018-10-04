@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "2.3"
+__version__ = "2.4"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -358,6 +358,10 @@ else:
 
 """Plot"""
 
+# Use tex, and use the default latex font
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+
 fig, ax1 = plt.subplots()
 
 ax1.minorticks_on()
@@ -370,9 +374,9 @@ else:
     ax1.set_xlabel("Sample position (mm)")
 
 if dividebyref == 'yes' or dividebyref == 'Yes':
-    ax1.set_ylabel("Relative peak voltage sigX/refX")
+    ax1.set_ylabel("Relative peak voltage sig$_x$/ref$_x$")
 else:
-    ax1.set_ylabel("Peak signal voltage sigX (V)")
+    ax1.set_ylabel("Peak signal voltage sig$_x$ (V)")
 
 ax1.set_xlim(mmcoord[0] - mmextrapol, mmcoord[-1] + mmextrapol)
 
@@ -390,6 +394,8 @@ if (makecoordrel == 'yes' or makecoordrel == 'Yes'):
     # If a center has been found, add lines to show it
     ax1.axvline(color='black', alpha=0.5)
 
+
+ax1.grid(which='both', axis='both')
 ax2 = ax1.twiny()  # Second x-axis is twin to first
 
 # Make second plot on the second axis, but make it transparent
@@ -400,10 +406,6 @@ ax2.errorbar(peakpos, datapoint, yerr=datastddev,
 
 ax2.set_xlabel("Motor position")
 ax2.set_xlim(peakpos[0] - posextrapol, peakpos[-1] + posextrapol)
-
-ax1.grid(which='both', axis='both')
-# Sometimes axis labels will fall of the plot without the tight_layout line
-plt.tight_layout()
 
 
 """Save"""
