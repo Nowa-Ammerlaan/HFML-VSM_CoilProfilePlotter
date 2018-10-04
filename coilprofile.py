@@ -312,7 +312,7 @@ if fit == 'yes' or fit == 'Yes':
     if dividebyref == 'yes' or dividebyref == 'Yes':
         guess_amp = 1
     else:
-        guess_amp = np.sqrt(2) * np.pi**2 * guess_amp * freq * guess_N * 1e-7
+        guess_amp = np.pi * guess_amp * freq * guess_N * 1e-7 / np.sqrt(2)
     p0 = [guess_x0, guess_amp, guess_r1, guess_r2, guess_L]
 
     # Fit
