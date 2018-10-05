@@ -131,11 +131,11 @@ Use LaTeX to render all text
 Set the height and width of the plot (in mm).
 Note that this is not used when saving plot as .tex, in this case the height and width need to be specified in the file that the plot is included into:
 ```
-\\newlength\\figH\
-\\newlength\\figW\
-\\setlength{\\figH}{10cm}\
-\\setlength{\\figW}{\\textwidth}\
-\\input{filename.tex}
+\newlength\figH
+\newlength\figW
+\setlength{\figH}{10cm}
+\setlength{\figW}{\textwidth}
+\input{filename.tex}
 ```
 
 **dividebyref = _'yes'_**
