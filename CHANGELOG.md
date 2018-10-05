@@ -35,3 +35,7 @@
 ### 2.4
 - Remove plt.tight_layout, it causes problems with minus signs when exporting as pgf or tex, it works with pdf etc. But pgf and tex are preferred formats for processing with latex further on.
 - Now using latex default font by default, this can of course always be changed by the user to their preferred font.
+
+### 2.5
+- Added option to control figure width/height.
+- Added option to render text with tex.

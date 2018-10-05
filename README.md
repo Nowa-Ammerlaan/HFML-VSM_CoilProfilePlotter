@@ -123,6 +123,21 @@ Fit the theoretical coil profile to the data, this works best if at both ends of
 Should the upper x-axis coordinates be shifted such that 0 corresponds to the coil center?
 Note that this option is only available when fit=yes otherwise there is no coil center to shift to.
 
+**usetex = _'yes'_**
+Use LaTeX to render all text
+
+**plotheight = _float_**\
+**plotwidth = _float_**\
+Set the height and width of the plot (in mm).
+Note that this is not used when saving plot as .tex, in this case the height and width need to be specified in the file that the plot is included into:
+```
+\\newlength\\figH\
+\\newlength\\figW\
+\\setlength{\\figH}{10cm}\
+\\setlength{\\figW}{\\textwidth}\
+\\input{filename.tex}
+```
+
 **dividebyref = _'yes'_**
 When this is enabled, the VSM's signal is divided by the reference signal from the motor.
 This should help in correcting any errors introduced due to position dependent friction.

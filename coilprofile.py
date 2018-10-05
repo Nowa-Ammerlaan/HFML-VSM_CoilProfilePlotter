@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "2.4"
+__version__ = "2.5"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -70,6 +70,10 @@ guess_N = 6120  # aproximate number of windings
 
 makecoordrel = 'yes'  # Plot x coordinates in mm relative to coil center.
 # This option is only available if fit='yes'
+usetex = 'yes'  # Use tex for rendering text in the plot
+plotheight = 91.39  # mm The height of the plot
+plotwidth = 137.085  # mm The width of the plot, you might want to set this to
+# the default latex textwidth 137.085 or smaller
 dividebyref = 'yes'  # Divide sigX by refX to make the data relative to the
 # reference signal from recorded from the VSM motor
 
@@ -358,15 +362,18 @@ else:
 
 """Plot"""
 
-# Use tex, and use the default latex font
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
+if usetex == 'yes' or usetex == 'Yes':
+    # Use tex, and use the default latex font
+    plt.rc('text', usetex=True)
+    plt.rc('font', family='serif')
 
 fig, ax1 = plt.subplots()
 
+fig.set_size_inches(plotwidth / 25.4, plotheight / 25.4)
+
 ax1.minorticks_on()
 ax1.errorbar(mmcoord, datapoint, yerr=datastddev,
-             linestyle='None', fmt='.', elinewidth=0.5, )
+             linestyle='None', fmt='.')
 
 if makecoordrel == 'yes' or makecoordrel == 'Yes':
     ax1.set_xlabel("Sample position relative to the coil center (mm)")
@@ -417,6 +424,13 @@ if len(sys.argv) == 3:
         # If the file ends in .tex, use tikz to save it
         from matplotlib2tikz import save as tikz_save
         print("\nSaving plot as %s using matplotlib2tikz" % (fileout))
+        print("Add the plot to your tex document with something like:",
+              "\\input{%s}" % (fileout))
+        print("The following is required somewhere in this document:")
+        print("\t\\newlength\\figH\n",
+              "\t\\newlength\\figW\n",
+              "\t\\setlength{\\figH}{someheight}\n",
+              "\t\\setlength{\\figW}{somewidth)}\n")
         tikz_save(fileout, figureheight='\\figH', figurewidth='\\figW')
         sys.exit(0)
     else:
