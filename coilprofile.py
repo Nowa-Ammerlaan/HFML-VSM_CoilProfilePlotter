@@ -35,7 +35,7 @@ from scipy.optimize import curve_fit
 
 convert = 5.376e-3  # How many mm does the motor move
 # when it moves 1 motor position?
-mmextrapol = 2  # (mm) How many mm to extrapolate/to add to xlim
+mmextrapol = 0.5  # (mm) How many mm to extrapolate/to add to xlim
 yextrapol = 0.005  # How much to add to ylim
 
 stepdur = 20  # (s) # How long is the VSM at 1 position?
@@ -60,7 +60,7 @@ b = 238.4372817
 rm_lastpoint = 0
 rm_firstpoint = 0  # Amount of peaks to remove from beginning
 
-fit = 'yes'  # Fit theoretical coil profile to the data
+fit = 'no'  # Fit theoretical coil profile to the data
 guess_x0 = 15  # mm where is the coil center approximatly?
 guess_amp = 1.08  # mm what is the VSM's amplitude
 guess_r1 = 1.6  # mm approximate inner radius
@@ -91,7 +91,7 @@ refXpos = 5  # Default: 5
 refYpos = 6  # Default: 6
 potmetDCpos = 7  # Default 7
 
-timeinmillisec = 'no'  # set to yes if time in data file is in milliseconds
+timeinmillisec = 'yes'  # set to yes if time in data file is in milliseconds
 # instead of seconds
 
 
@@ -436,6 +436,7 @@ if len(sys.argv) == 3:
     else:
         # If not use regular save function
         print("\nSaving plot as %s" % (fileout))
+        plt.tight_layout()
         plt.savefig(fileout)
         sys.exit(0)
 
@@ -445,5 +446,6 @@ else:
           "second argument. Valid outut files are files that are supported",
           "by matplotlib's savefig (e.g. .pdf, .png)",
           "or matplotlib2tikz (.tex)")
+    plt.tight_layout()
     plt.show()
     sys.exit(0)
