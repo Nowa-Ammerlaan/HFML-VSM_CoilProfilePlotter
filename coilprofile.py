@@ -51,8 +51,8 @@ minpeakV = 1e-5  # (V) signal must be minimally this high for it to be
 
 # Potentio meter calibaration
 # motor coordinates = a * potentiometer DC voltage + b
-a = 8858.945249
-b = 483.7063215
+a = 8830.788615
+b = 238.4372817
 
 # The last peaks can be problematic because the measurement does not stop
 # automaically at the end of the position loop,
@@ -409,7 +409,7 @@ ax2 = ax1.twiny()  # Second x-axis is twin to first
 # because otherwise the plot would be shown twice
 ax2.minorticks_on()
 ax2.errorbar(peakpos, datapoint, yerr=datastddev,
-             linestyle='None', fmt='.', elinewidth=0.5, color='white', alpha=0)
+             linestyle='None', fmt='.', color='white', alpha=0)
 
 ax2.set_xlabel("Motor position")
 ax2.set_xlim(peakpos[0] - posextrapol, peakpos[-1] + posextrapol)
