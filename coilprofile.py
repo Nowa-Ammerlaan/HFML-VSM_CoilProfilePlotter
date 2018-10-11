@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "2.5"
+__version__ = "2.6"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -71,7 +71,7 @@ guess_N = 6120  # aproximate number of windings
 makecoordrel = 'yes'  # Plot x coordinates in mm relative to coil center.
 # This option is only available if fit='yes'
 usetex = 'yes'  # Use tex for rendering text in the plot
-plotheight = 91.39  # mm The height of the plot
+plotheight = 68.5425  # mm The height of the plot
 plotwidth = 137.085  # mm The width of the plot, you might want to set this to
 # the default latex textwidth 137.085 or smaller
 dividebyref = 'yes'  # Divide sigX by refX to make the data relative to the
@@ -91,7 +91,7 @@ refXpos = 5  # Default: 5
 refYpos = 6  # Default: 6
 potmetDCpos = 7  # Default 7
 
-timeinmillisec = 'yes'  # set to yes if time in data file is in milliseconds
+timeinmillisec = 'no'  # set to yes if time in data file is in milliseconds
 # instead of seconds
 
 
@@ -176,6 +176,7 @@ if dividebyref == 'yes' or dividebyref == 'Yes':
 # Introduce new arrays for the processed data
 datapoint = np.zeros(num_lines)
 peakpos = np.zeros(num_lines)
+peakstddev = np.zeros(num_lines)
 datastddev = np.zeros(num_lines)
 tmpindices = np.zeros(num_lines)
 
@@ -251,6 +252,7 @@ for i in range(0, num_lines - 1):
             peaksig = np.trim_zeros(peaksig)
             possig = np.trim_zeros(possig)
             peakpos[k] = np.average(possig)
+            peakstddev[k] = np.std(possig)
             datapoint[k] = np.average(peaksig)
             datastddev[k] = np.std(peaksig)
 
@@ -264,6 +266,7 @@ for i in range(0, num_lines - 1):
 datapoint = np.trim_zeros(datapoint)
 datastddev = np.trim_zeros(datastddev)
 peakpos = np.trim_zeros(peakpos)
+peakstddev = np.trim_zeros(peakstddev)
 
 # Remove begining points if necessary
 for u in range(0, rm_firstpoint):
@@ -272,6 +275,7 @@ for u in range(0, rm_firstpoint):
     datapoint = np.delete(datapoint, 0)
     datastddev = np.delete(datastddev, 0)
     peakpos = np.delete(peakpos, 0)
+    peakstddev = np.delete(peakstddev, 0)
 
 
 # Remove endpoints, if necessary
@@ -281,10 +285,12 @@ for t in range(peakpos.size - 1, (peakpos.size - 1) - rm_lastpoint, -1):
     datapoint = np.delete(datapoint, -1)
     datastddev = np.delete(datastddev, -1)
     peakpos = np.delete(peakpos, -1)
+    peakstddev = np.delete(peakstddev, -1)
 
 
 # Motor coords to millimeter and mm units from config to motor coords.
 mmcoord = peakpos * convert
+mmstddev = peakstddev * convert
 posextrapol = mmextrapol / convert
 
 
@@ -372,7 +378,7 @@ fig, ax1 = plt.subplots()
 fig.set_size_inches(plotwidth / 25.4, plotheight / 25.4)
 
 ax1.minorticks_on()
-ax1.errorbar(mmcoord, datapoint, yerr=datastddev,
+ax1.errorbar(mmcoord, datapoint, xerr=mmstddev, yerr=datastddev,
              linestyle='None', fmt='.')
 
 if makecoordrel == 'yes' or makecoordrel == 'Yes':
@@ -408,7 +414,7 @@ ax2 = ax1.twiny()  # Second x-axis is twin to first
 # Make second plot on the second axis, but make it transparent
 # because otherwise the plot would be shown twice
 ax2.minorticks_on()
-ax2.errorbar(peakpos, datapoint, yerr=datastddev,
+ax2.errorbar(peakpos, datapoint, xerr=peakstddev, yerr=datastddev,
              linestyle='None', fmt='.', color='white', alpha=0)
 
 ax2.set_xlabel("Motor position")

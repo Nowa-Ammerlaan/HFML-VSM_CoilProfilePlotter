@@ -39,3 +39,6 @@
 ### 2.5
 - Added option to control figure width/height.
 - Added option to render text with tex.
+
+### 2.6
+- Now also plots the stddev of the position measurement on the x-axis
