@@ -51,8 +51,8 @@ minpeakV = 1e-5  # (V) signal must be minimally this high for it to be
 
 # Potentio meter calibaration
 # motor coordinates = a * potentiometer DC voltage + b
-a = 8830.788615
-b = 238.4372817
+a = 4287.347911
+b = 736.918625
 
 # The last peaks can be problematic because the measurement does not stop
 # automaically at the end of the position loop,
@@ -91,7 +91,12 @@ refXpos = 5  # Default: 5
 refYpos = 6  # Default: 6
 potmetDCpos = 7  # Default 7
 
-timeinmillisec = 'no'  # set to yes if time in data file is in milliseconds
+sigX_corr = np.sqrt(1000)  # 30 dB
+sigY_corr = np.sqrt(1000)  # 30 dB
+refX_corr = np.sqrt(1000)  # 30 dB
+refY_corr = np.sqrt(1000)  # 30 dB
+
+timeinmillisec = 'yes'  # set to yes if time in data file is in milliseconds
 # instead of seconds
 
 
@@ -157,6 +162,17 @@ for line in file:
         potmetDC[h] = dataline[potmetDCpos]
         h = h + 1
 
+# correct time to seconds if in milliseconds, it has to have the same units as
+# stepdur
+if timeinmillisec == 'yes' or timeinmillisec == 'Yes':
+    time = time * 1e-3
+
+# correct for amplification of the signal and reference
+sigX = sigX / sigX_corr
+sigY = sigY / sigY_corr
+refX = refX / refX_corr
+refY = refY / refY_corr
+
 # Make the amplitude relative to the reference amplitude, this becomes
 # relavant near the beginning and end of the position loop where the
 # motor has to work harder against the spring
@@ -170,7 +186,6 @@ if dividebyref == 'yes' or dividebyref == 'Yes':
     relsigX = np.nan_to_num(relsigX)
     relsigY = np.nan_to_num(relsigY)
 
-
 """Find peaks"""
 
 # Introduce new arrays for the processed data
@@ -180,8 +195,6 @@ peakstddev = np.zeros(num_lines)
 datastddev = np.zeros(num_lines)
 tmpindices = np.zeros(num_lines)
 
-if timeinmillisec == 'yes' or timeinmillisec == 'Yes':
-    time = time * 1e-3
 
 timeofoneindex = np.average(np.diff(np.trim_zeros(time)))  # Moving 1 index
 # corresponds to this much in time

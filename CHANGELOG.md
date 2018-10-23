@@ -42,3 +42,6 @@
 
 ### 2.6
 - Now also plots the stddev of the position measurement on the x-axis
+
+### 2.7
+- Added option to correct for amplification of signal and reference
