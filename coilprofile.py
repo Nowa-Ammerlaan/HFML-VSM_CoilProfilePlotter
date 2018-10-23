@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "2.6"
+__version__ = "2.7"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -51,8 +51,8 @@ minpeakV = 1e-5  # (V) signal must be minimally this high for it to be
 
 # Potentio meter calibaration
 # motor coordinates = a * potentiometer DC voltage + b
-a = 4287.347911
-b = 736.918625
+a = 8830.788615
+b = 238.4372817
 
 # The last peaks can be problematic because the measurement does not stop
 # automaically at the end of the position loop,
