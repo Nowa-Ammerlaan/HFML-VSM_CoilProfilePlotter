@@ -5,7 +5,7 @@ A python program to make plots of the response of a VSM's pickup coils as a func
 I assume that you are already familiar with the concept of a VSM (Vibrating-sample magnetometer), if not then this is probably not what you are looking for.
 
 ## Long description
-To measure the response of a VSM's pickup coils, set it up to go through a 'position loop'. This means that the VSM will start vibrating for a set amount of time (stepdur) at a set begin position, then stop. 
+To measure the response of a VSM's pickup coils as a function of the position, set it up to go through a 'position loop'. This means that the VSM will start vibrating for a set amount of time (stepdur) at a set begin position, then stop. 
 And then move a certain distance and start vibrating there again. 
 The vibrating motion will induce a (~90 degree phase shifted) AC voltage across the pickup coils, which will depend strongly on the position at which the VSM is currently vibrating. 
 When this voltage is measured (e.g using 2 Lock-In amplifiers; 1 for reference and 1 for the VSM's signal) it can be plotted against the VSM's position. 
@@ -23,9 +23,8 @@ The versions indicated here are the versions that I am currently using, but ther
 
 ## Other requirements
 The program relies on the use of at least 1 lock-in to measure the VSM's signal, for best results use a second lock-in to record a reference signal from a potentiometer connected to the motor.
-To determine the position of the data points correctly the program requires that the position be recorded simultaneously with the signal, 
-this can be accomplished by using a 1Hz low pass filter on the reference signal from the motor's potentiometer and recording it's voltage. 
-This voltage should then calibrated with the motor's position, the program has 2 config options for these calibration parameters (y=a*x+b).
+To determine the position of the data points correctly the program requires that the position be recorded simultaneously with the signal, this can be accomplished by using a 1Hz low pass filter on the reference signal and recording this voltage. 
+This voltage should then be calibrated with the motor's position, the program has 2 config options for these calibration parameters (y=a*x+b).
 
 ## How does it work?
 Open the coilprofile.py file and edit the config options. See also the overview of options below.
@@ -53,8 +52,8 @@ And the program will use plt.savefig() to save the plot to `outputfile` instead.
 Note that `outputfile` should have one of the filename extensions supported by matplotlib (e.g. `.pdf`, `.png`)
 or the `.tex` extension, in which case it will use matplotlib2tikz.
 
-## Can I use/adapt your program?
-Of course you can, it's licensed under GPLv3.
+## Can I use/adapt/copy your program?
+Of course you can, it's licensed under GPLv3, just give credit when due and keep it open source.
 
 ## I have an improvement/comment
 Awesome, please leave it in the bug reports and I will look at it ASAP.
@@ -65,10 +64,10 @@ Try increasing 'reacttime' and maybe play a bit with 'minpeakV' and 'deltafreq',
 ## The scipy fit fails, what happened?
 For a function as complex as this one, scipy's curve_fit requires very good starting estimates. 
 Make sure that the 'guess_r1', 'guess_r2', 'guess_L' and 'guess_N' variables are set to very close estimates. 
-Also provide a good guess for guess_x0, this can be done by first plotting with fit='no' and manually determining the approximate coilcenter.
+Also provide a good guess for guess_x0, this can be done by first plotting with fit='no' and manually determining where approximatly the first peak occurs.
 
 ## Help, it doesn't work
-If you run into anything, and you can't work it out with the comments in the program or one of the options. You can always leave a bug report here and I'll see what I can do.
+If you run into anything, and you can't work it out with the comments in the program or one of the options. You can always leave a bug report here and I'll see if I can help.
 
 ## Overview of options in the config (the config is just the top of the program)
 
@@ -80,20 +79,20 @@ If fit=yes, how far should the fit be extrapolated (in mm)
 I recommend you start with this set to 0 and then see how that looks first. And if it looks safe turn this up a bit. Note that this variable also controls the limits of the x-axis.
 
 **yextrapol = _float_**
-This parameter controls how much is added/substracted from the limits of the y axis
+This parameter controls the limits of the y axis
 
 **stepdur = _float_**
 How long does the VSM vibrate at one position (in seconds)? 
 This is used in combination with reacttime to calculate how many points there are within a peak.
 
 **reacttime = _float_**
-The voltage will not jump instantly from background noise level to a peak, the data points that are above the threshold but not in the peak should be ignored. Set this according to how long it takes for the system to respond, too high is better then too low (in seconds).
+The voltage will not jump instantly from the background noise level to a peak, the data points that are above the threshold but not in the peak should be ignored. Set this according to how long it takes for the system to respond, too high is better then too low (in seconds).
 
 **freq = _float_**
 The frequency of the VSM's vibration, this is compared to the frequency measured by the lock-in (in Hz).
 
 **deltafreq = _float_**
-How close should the measured frequency be to the variable 'freq'?
+Any data points that are not between 'freq-deltafreq' and 'freq+deltafreq' are rejected. To accept all points just set this equal to 'freq' or very large.
 
 **minpeakV = _float_**
 How high should the signal be before it is considered a peak?
@@ -103,28 +102,29 @@ How high should the signal be before it is considered a peak?
 Motor_coordinates = a * potentiometer_DC_voltage + b
 
 **rm_lastpoint = _int_**
-Sometimes the last point is off, say yes here to remove it from the data
-This happens if the VSM does not stop automatically after the position loop has been completed, but instead continues vibrating at that position until aborted by the user. Set the amount of peaks to remove from the end.
+Sometimes the last points are off, this integer controls the number of peaks to remove from the end.
 
 **rm_firstpoint = _int_**
-Sometimes the first point is off, how many peaks should be removed from the beginning.
+Same as 'rm_lastpoint' but for the first peaks
 
 **fit = _'yes'_**
-Fit the theoretical coil profile to the data, this works best if at both ends of the coil were within the range of the position loop. If the fit is weird or fails, try adjusting the 'guess_' parameters.
+Fit the theoretical coil profile to the data, this works best if both ends of the coil were within the range of the position loop. If the fit is weird or fails, try adjusting the 'guess_' parameters.
 
-**guess_x0 = _float_** Where is the coil center approximately? If unsure plot with fit='no' first, and determine the approximate center from the plot (in mm).\
+**guess_x0 = _float_** Offset of the function, if unsure plot with fit='no' first, and determine the location of the first peak from the plot (in mm).\
 **guess_amp = _float_** What was the VSM's amplitude (in mm).\
-**guess_r1 = _float_** Approximate inner radius (in mm).\
-**guess_r2 = _float_** Approximate outer radius (in mm).\
-**guess_L = _float_** Approximate length (in mm).\
-**guess_N = _float_** Approximate number of windings.
+**guess_r1 = _float_** Approximate inner radius of the coil (in mm).\
+**guess_r2 = _float_** Approximate outer radius of the coil (in mm).\
+**guess_L = _float_** Approximate length of the coil (in mm).\
+**guess_N = _float_** Approximate number of windings of the coil.
 
 **makecoordrel = _'yes'_**
 Should the upper x-axis coordinates be shifted such that 0 corresponds to the coil center?
 Note that this option is only available when fit=yes otherwise there is no coil center to shift to.
 
 **usetex = _'yes'_**
-Use LaTeX to render all text
+Use LaTeX to render all text, highly recommended when including plots in latex files.
+Note that saving as .pgf or .tex gives best results in latex. 
+This option has no effect when saving as .tex, as text won't be rendered untill the document is compiled.
 
 **plotheight = _float_**\
 **plotwidth = _float_**\
@@ -137,6 +137,7 @@ Note that this is not used when saving plot as .tex, in this case the height and
 \setlength{\figW}{\textwidth}
 \input{filename.tex}
 ```
+This has the advantage of being able to change the plots size without re-running this program, if however you have problems with .tex plots, try saving as .pgf instead. 
 
 **dividebyref = _'yes'_**
 When this is enabled, the VSM's signal is divided by the reference signal from the motor.
@@ -151,6 +152,6 @@ Note that disabling this might cause fit to fail, it is recommended to keep this
 **refXpos = _int_**\
 **refYpos = _int_**\
 **potmerDCpos = _int_**\
-Sometimes additional devices are measured simultaneously with the lock-ins, here you can set in which columns the relevant data is stored.
+Here you can set in which columns of the data file the relevant data is stored.
 
 **timeinmillisec = _'yes'_** Set to yes if the time in the time-colomn is in millliseconds, if disabled time is assumed to be in seconds.
