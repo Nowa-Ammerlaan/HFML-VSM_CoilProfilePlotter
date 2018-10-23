@@ -64,7 +64,7 @@ Try increasing 'reacttime' and maybe play a bit with 'minpeakV' and 'deltafreq',
 ## The scipy fit fails, what happened?
 For a function as complex as this one, scipy's curve_fit requires very good starting estimates. 
 Make sure that the 'guess_r1', 'guess_r2', 'guess_L' and 'guess_N' variables are set to very close estimates. 
-Also provide a good guess for guess_x0, this can be done by first plotting with fit='no' and manually determining where approximatly the first peak occurs.
+Also provide a good guess for guess_x0, this can be done by first plotting with fit='no' and manually determining where approximately the first peak occurs.
 
 ## Help, it doesn't work
 If you run into anything, and you can't work it out with the comments in the program or one of the options. You can always leave a bug report here and I'll see if I can help.
@@ -124,7 +124,7 @@ Note that this option is only available when fit=yes otherwise there is no coil 
 **usetex = _'yes'_**
 Use LaTeX to render all text, highly recommended when including plots in latex files.
 Note that saving as .pgf or .tex gives best results in latex. 
-This option has no effect when saving as .tex, as text won't be rendered untill the document is compiled.
+This option has no effect when saving as .tex, as text won't be rendered until the document is compiled.
 
 **plotheight = _float_**\
 **plotwidth = _float_**\
@@ -151,7 +151,13 @@ Note that disabling this might cause fit to fail, it is recommended to keep this
 **reffreqpos = _int_**\
 **refXpos = _int_**\
 **refYpos = _int_**\
-**potmerDCpos = _int_**\
+**potmetDCpos = _int_**\
 Here you can set in which columns of the data file the relevant data is stored.
 
-**timeinmillisec = _'yes'_** Set to yes if the time in the time-colomn is in millliseconds, if disabled time is assumed to be in seconds.
+**sigX_corr = _float_**\
+**sigY_corr = _float_**\
+**refX_corr = _float_**\
+**refY_corr = _float_**\
+The signal and reference are divided by these numbers to correct for any amplifications during measurement.
+
+**timeinmillisec = _'yes'_** Set to yes if the time in the time-column is in millliseconds, if disabled time is assumed to be in seconds.
