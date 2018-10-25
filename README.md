@@ -2,7 +2,7 @@
 A python program to make plots of the response of a VSM's pickup coils as a function of the position.
 
 ### Note:
-I assume that you are already familiar with the concept of a VSM (Vibrating-sample magnetometer), if not then this is probably not what you are looking for.
+I assume that you are already familiar with the concept of a VSM (Vibrating-sample magnetometer), if not then read the article in the Documents folder first.
 
 ## Long description
 To measure the response of a VSM's pickup coils as a function of the position, set it up to go through a 'position loop'. This means that the VSM will start vibrating for a set amount of time (stepdur) at a set begin position, then stop. 
