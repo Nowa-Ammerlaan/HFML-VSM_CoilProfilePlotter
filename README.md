@@ -25,6 +25,8 @@ The versions indicated here are the versions that I am currently using, but ther
 The program relies on the use of at least 1 lock-in to measure the VSM's signal, for best results use a second lock-in to record a reference signal from a potentiometer connected to the motor.
 To determine the position of the data points correctly the program requires that the position be recorded simultaneously with the signal, this can be accomplished by using a 1Hz low pass filter on the reference signal and recording this voltage. 
 This voltage should then be calibrated with the motor's position, the program has 2 config options for these calibration parameters (y=a*x+b).
+Optionally it is possible to make this reference dimensionless by dividing it by the voltage across applied to the potentiometer.
+Note that in this case the parameters 'a' and 'b' should be calculated using the dimensionless reference as well.
 
 ## How does it work?
 Open the coilprofile.py file and edit the config options. See also the overview of options below.
@@ -144,6 +146,15 @@ When this is enabled, the VSM's signal is divided by the reference signal from t
 This should help in correcting any errors introduced due to position dependent friction.
 Note that disabling this might cause fit to fail, it is recommended to keep this enabled at all times unless you have no reference data available.
 
+**absval = _'yes'_**
+If enabled the absolute value of the real and complex part is used instead of just the real part.
+Note that the use of the lock-in's 'autophase' function is still required to correctly determine the sign.
+
+**relref = _'yes'_**
+This makes the reference dimensionless by dividing it by the voltage across the whole potentiometer.
+This is useful when comparing measurements for which the potentiometer's voltage was different.
+Note that if this is used the parameters 'a' and 'b' should be calculated using the dimensionless reference as well.
+
 **timepos = _int_**\
 **sigfreqpos = _int_**\
 **sigXpos = _int_**\
@@ -152,12 +163,11 @@ Note that disabling this might cause fit to fail, it is recommended to keep this
 **refXpos = _int_**\
 **refYpos = _int_**\
 **potmetDCpos = _int_**\
+**batDCpos = _int_**\
 Here you can set in which columns of the data file the relevant data is stored.
 
-**sigX_corr = _float_**\
-**sigY_corr = _float_**\
-**refX_corr = _float_**\
-**refY_corr = _float_**\
+**sig_corr = _float_**\
+**ref_corr = _float_**\
 The signal and reference are divided by these numbers to correct for any amplifications during measurement.
 
 **timeinmillisec = _'yes'_** Set to yes if the time in the time-column is in millliseconds, if disabled time is assumed to be in seconds.

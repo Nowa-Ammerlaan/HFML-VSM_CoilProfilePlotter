@@ -20,7 +20,7 @@ they occur.
 
 __author__ = "Andrew Ammerlaan"
 __license__ = "GPLv3"
-__version__ = "2.7"
+__version__ = "3.0"
 __maintainer__ = "Andrew Ammerlaan"
 __email__ = "andrewammerlaan@riseup.net"
 __status__ = "Production"
@@ -36,9 +36,9 @@ from scipy.optimize import curve_fit
 convert = 5.376e-3  # How many mm does the motor move
 # when it moves 1 motor position?
 mmextrapol = 0.5  # (mm) How many mm to extrapolate/to add to xlim
-yextrapol = 0.005  # How much to add to ylim
+yextrapol = 0.0005  # How much to add to ylim
 
-stepdur = 20  # (s) # How long is the VSM at 1 position?
+stepdur = 10  # (s) # How long is the VSM at 1 position?
 reacttime = 2  # (s) It takes a certain amount of time for the voltage to reach
 # it's peak value, these data points should not be included in the peak.
 
@@ -51,8 +51,8 @@ minpeakV = 1e-5  # (V) signal must be minimally this high for it to be
 
 # Potentio meter calibaration
 # motor coordinates = a * potentiometer DC voltage + b
-a = 8830.788615
-b = 238.4372817
+a = 1907.657999
+b = 2424.468097
 
 # The last peaks can be problematic because the measurement does not stop
 # automaically at the end of the position loop,
@@ -70,31 +70,35 @@ guess_N = 6120  # aproximate number of windings
 
 makecoordrel = 'yes'  # Plot x coordinates in mm relative to coil center.
 # This option is only available if fit='yes'
-usetex = 'yes'  # Use tex for rendering text in the plot
+usetex = 'no'  # Use tex for rendering text in the plot
 plotheight = 68.5425  # mm The height of the plot
 plotwidth = 137.085  # mm The width of the plot, you might want to set this to
 # the default latex textwidth 137.085 or smaller
 dividebyref = 'yes'  # Divide sigX by refX to make the data relative to the
 # reference signal from recorded from the VSM motor
+absval = 'yes'  # Take the absolute value of x and y
+relref = 'yes'  # Divide the reference by the current battery voltage, note
+# that to use this, the paramaters a and b must have obtained from a fit
+# of the relative voltage (divided by the battery voltage) as well
 
 # When measuring additional devices as well as the 2 SR830s,
 # the index of the columns that correspond to the reference and signal
 # lock in's data should be inserted into their respective variable
 # e.g: "Time(sec)	Dev2_freq	Dev2SR830_X	Dev2_Y	Dev3_freq
 # Dev3SR830_X	Dev3_Y	Dev4_K2000(V)"
-timepos = 0  # Default 0
+timepos = 0  # Default: 0
 sigfreqpos = 1  # Default: 1
 sigXpos = 2  # Default: 2
 sigYpos = 3  # Default: 3
 reffreqpos = 4  # Default: 4
 refXpos = 5  # Default: 5
 refYpos = 6  # Default: 6
-potmetDCpos = 7  # Default 7
+potmetDCpos = 7  # Default: 7
+batDCpos = 8  # Default: 8
 
-sigX_corr = np.sqrt(1000)  # 30 dB
-sigY_corr = np.sqrt(1000)  # 30 dB
-refX_corr = np.sqrt(1000)  # 30 dB
-refY_corr = np.sqrt(1000)  # 30 dB
+sig_corr = 100  # 30 dB
+ref_corr = 1  # 30 dB
+
 
 timeinmillisec = 'yes'  # set to yes if time in data file is in milliseconds
 # instead of seconds
@@ -134,6 +138,7 @@ reffreq = np.zeros(num_lines)
 refX = np.zeros(num_lines)
 refY = np.zeros(num_lines)
 potmetDC = np.zeros(num_lines)
+batDC = np.zeros(num_lines)
 
 h = 0  # Counting integer
 
@@ -160,6 +165,7 @@ for line in file:
         refX[h] = dataline[refXpos]
         refY[h] = dataline[refYpos]
         potmetDC[h] = dataline[potmetDCpos]
+        batDC[h] = dataline[batDCpos]
         h = h + 1
 
 # correct time to seconds if in milliseconds, it has to have the same units as
@@ -168,21 +174,46 @@ if timeinmillisec == 'yes' or timeinmillisec == 'Yes':
     time = time * 1e-3
 
 # correct for amplification of the signal and reference
-sigX = sigX / sigX_corr
-sigY = sigY / sigY_corr
-refX = refX / refX_corr
-refY = refY / refY_corr
+sigX = sigX / sig_corr
+sigY = sigY / sig_corr
+refX = refX / ref_corr
+refY = refY / ref_corr
+
+# make the reference dimension less, making it independent of current batteryDC
+if relref == 'yes' or relref == 'Yes':
+    refX = refX / batDC
+    refY = refY / batDC
+    potmetDC = potmetDC / batDC
+
+# Calculate the absolute value and choose appropiate sign (assuming autophased)
+sig = np.zeros(sigX.size)
+ref = np.zeros(refX.size)
+if absval == 'yes' or absval == 'Yes':
+    for v in range(0, sigX.size):
+        if sigX[v] >= 0:
+            sig[v] = np.sqrt(sigX[v]**2 + sigY[v]**2)
+        else:
+            sig[v] = -np.sqrt(sigX[v]**2 + sigY[v]**2)
+        if refX[v] >= 0:
+            ref[v] = np.sqrt(refX[v]**2 + refY[v]**2)
+        else:
+            ref[v] = -np.sqrt(refX[v]**2 + refY[v]**2)
+
 
 # Make the amplitude relative to the reference amplitude, this becomes
 # relavant near the beginning and end of the position loop where the
 # motor has to work harder against the spring
 if dividebyref == 'yes' or dividebyref == 'Yes':
+    relsig = sig / ref
     relsigX = sigX / refX
     relsigY = sigY / refY
+    relsig[np.isneginf(relsig)] = 0
     relsigX[np.isneginf(relsigX)] = 0
     relsigY[np.isneginf(relsigY)] = 0
+    relsig[np.isposinf(relsig)] = 0
     relsigX[np.isposinf(relsigX)] = 0
     relsigY[np.isposinf(relsigY)] = 0
+    relsig = np.nan_to_num(relsig)
     relsigX = np.nan_to_num(relsigX)
     relsigY = np.nan_to_num(relsigY)
 
@@ -254,9 +285,15 @@ for i in range(0, num_lines - 1):
                            midindex + peakindexrange):
                 # Move relevant data into new array
                 if dividebyref == 'yes' or dividebyref == 'Yes':
-                    peaksig[p] = relsigX[t]
+                    if absval == 'yes' or absval == 'Yes':
+                        peaksig[p] = relsig[t]
+                    else:
+                        peaksig[p] = relsigX[t]
                 else:
-                    peaksig[p] = sigX[t]
+                    if absval == 'yes' or absval == 'Yes':
+                        peaksig[p] = sig[t]
+                    else:
+                        peaksig[p] = sigX[t]
                 possig[p] = a * potmetDC[t] + b
                 p = p + 1
 
@@ -400,9 +437,24 @@ else:
     ax1.set_xlabel("Sample position (mm)")
 
 if dividebyref == 'yes' or dividebyref == 'Yes':
-    ax1.set_ylabel("Relative peak voltage sig$_x$/ref$_x$")
+    if absval == 'yes' or absval == 'Yes':
+        if relref == 'yes' or relref == 'Yes':
+            ax1.set_ylabel(("Absolute relative peak voltage\n"
+"$\sqrt{\mathrm{sig}_x^2+\mathrm{sig}_y^2}/\sqrt{\mathrm{ref}_x^2+\mathrm{ref}_y^2}$ (V)"))
+        else:
+            ax1.set_ylabel(("Absolute relative peak voltage\n"
+"$\sqrt{\mathrm{sig}_x^2+\mathrm{sig}_y^2}/\sqrt{\mathrm{ref}_x^2+\mathrm{ref}_y^2}$"))
+
+    else:
+        if relref == 'yes' or relref == 'Yes':
+            ax1.set_ylabel("Relative peak voltage sig$_x$/ref$_x$ (V)")
+        else:
+            ax1.set_ylabel("Relative peak voltage sig$_x$/ref$_x$")
 else:
-    ax1.set_ylabel("Peak signal voltage sig$_x$ (V)")
+    if absval == 'yes' or absval == 'Yes':
+        ax1.set_ylabel("Peak signal voltage $\sqrt{\mathrm{sig}_x^2+\mathrm{sig}_y^2}$ (V)")
+    else:
+        ax1.set_ylabel("Peak signal voltage sig$_x$ (V)")
 
 ax1.set_xlim(mmcoord[0] - mmextrapol, mmcoord[-1] + mmextrapol)
 

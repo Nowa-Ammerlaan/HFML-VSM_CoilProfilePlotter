@@ -41,7 +41,11 @@
 - Added option to render text with tex.
 
 ### 2.6
-- Now also plots the stddev of the position measurement on the x-axis
+- Now also plots the stddev of the position measurement on the x-axis.
 
 ### 2.7
-- Added option to correct for amplification of signal and reference
+- Added option to correct for amplification of signal and reference.
+
+### 3.0
+- Added option to calculate absolute value instead of using just the x component (autophase is still a good idea though).
+- Added option to make the reference dimensionless, by dividing by the voltage over the whole potentiometer.
