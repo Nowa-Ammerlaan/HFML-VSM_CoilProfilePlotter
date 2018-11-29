@@ -51,8 +51,8 @@ minpeakV = 1e-5  # (V) signal must be minimally this high for it to be
 
 # Potentio meter calibaration
 # motor coordinates = a * potentiometer DC voltage + b
-a = 1907.657999
-b = 2424.468097
+a = 5929.131696
+b = 1792.825427
 
 # The last peaks can be problematic because the measurement does not stop
 # automaically at the end of the position loop,
@@ -96,8 +96,8 @@ refYpos = 6  # Default: 6
 potmetDCpos = 7  # Default: 7
 batDCpos = 8  # Default: 8
 
-sig_corr = 100  # 30 dB
-ref_corr = 1  # 30 dB
+sig_corr = 100  # 40 dB
+ref_corr = 1  # 0 dB
 
 
 timeinmillisec = 'yes'  # set to yes if time in data file is in milliseconds
